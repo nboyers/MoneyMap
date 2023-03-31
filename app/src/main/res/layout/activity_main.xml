@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/primaryBlue">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/total_income"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/totalIncomeTextView"
+            android:layout_width="488dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/remaining_balance"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/remainingBalanceTextView"
+            android:layout_width="488dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Income and Expense input fields -->
+
+        <EditText
+            android:id="@+id/incomeEditText"
+            android:layout_width="488dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_income"
+            android:inputType="number"
+            android:textColor="@color/black"
+            android:background="@color/white"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:autofillHints="Income Editor" />
+
+        <EditText
+            android:id="@+id/foodExpenseEditText"
+            android:layout_width="488dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_food_expense"
+            android:inputType="number"
+            android:textColor="@color/black"
+            android:background="@color/white"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:autofillHints="Food Expense" />
+
+        <EditText
+            android:id="@+id/gasExpenseEditText"
+            android:layout_width="488dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_gas_expense"
+            android:inputType="number"
+            android:textColor="@color/black"
+            android:background="@color/white"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:autofillHints="Gas Expense" />
+
+        <EditText
+            android:id="@+id/entertainmentExpenseEditText"
+            android:layout_width="488dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_entertainment_expense"
+            android:inputType="number"
+            android:textColor="@color/black"
+            android:background="@color/white"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:autofillHints="Entertainment Expense" />
+
+        <EditText
+            android:id="@+id/savingsEditText"
+            android:layout_width="488dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/enter_savings"
+            android:inputType="number"
+            android:textColor="@color/black"
+            android:background="@color/white"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp"
+            android:autofillHints="Saving Expense" />
+
+        <!-- Save button -->
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@android:color/holo_green_light"
+            android:padding="16dp"
+            android:stateListAnimator="@null"
+            android:text="@string/save"
+            android:layout_gravity="center"
+            android:textColor="@color/black" />
+    </LinearLayout>
+</ScrollView>
+
