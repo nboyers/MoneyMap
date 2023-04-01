@@ -27,5 +27,9 @@
     <string name="save">Save</string>
     <string name="sign_out">Sign out</string>
     <string name="total_income">Total Income:</string>
-    <string name="signout_button">Signout Button</string>
+    <string name="sign_out_button">Signout Button</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="forgot_password_title">Forgot Password</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign Up</string>
 </resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">689886592669-4qsj34huo8rod30l4gndnd1bjq1d66ib.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">689886592669</string>
+    <string name="google_api_key" translatable="false">AIzaSyDpPEwIcgYklXzwsqJi-6XaBGk3NQEEvBw</string>
+    <string name="google_app_id" translatable="false">1:689886592669:android:ba746810d36af6c32d9e74</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDpPEwIcgYklXzwsqJi-6XaBGk3NQEEvBw</string>
+    <string name="google_storage_bucket" translatable="false">money-map-351c2.appspot.com</string>
+    <string name="project_id" translatable="false">money-map-351c2</string>
+</resources>
