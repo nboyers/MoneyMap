@@ -29,7 +29,7 @@ class SignUpActivity : AppCompatActivity() {
             signUp(email, password)
         }
     }
-
+//Func that allows the user to sign up to firebase
     private fun signUp(email: String, password: String) {
         mAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
