@@ -131,6 +131,13 @@
             android:text="@string/save"
             android:layout_gravity="center"
             android:textColor="@color/black" />
+        <Button
+            android:id="@+id/viewChartsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/view_charts"
+            android:layout_gravity="center"/>
+
     </LinearLayout>
 </ScrollView>
 
