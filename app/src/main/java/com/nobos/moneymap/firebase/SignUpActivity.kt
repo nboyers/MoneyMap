@@ -1,4 +1,4 @@
-package com.nobos.moneymap
+package com.nobos.moneymap.firebase
 
 // SignUpActivity.kt
 import android.content.Intent
@@ -8,6 +8,8 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.nobos.moneymap.MainActivity
+import com.nobos.moneymap.R
 
 class SignUpActivity : AppCompatActivity() {
 

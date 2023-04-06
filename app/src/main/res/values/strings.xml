@@ -33,4 +33,14 @@
     <string name="login">Login</string>
     <string name="sign_up">Sign Up</string>
     <string name="view_charts">View Charts</string>
+    <!-- Define the options for the period dropdown menu -->
+    <string-array name="period_options">
+        <item>Weekly</item>
+        <item>Monthly</item>
+        <item>Yearly</item>
+    </string-array>
+
+    <!-- Define the prompt for the period dropdown menu -->
+    <string name="period_prompt">Select a period:</string>
+
 </resources>
