@@ -42,5 +42,7 @@
 
     <!-- Define the prompt for the period dropdown menu -->
     <string name="period_prompt">Select a period:</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="create_account">Create Account</string>
 
 </resources>

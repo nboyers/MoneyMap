@@ -2,7 +2,6 @@ package com.nobos.moneymap.models
 
 // Budget.kt
 data class Budget(
-    val id: String = "",
     val userId: String = "",
     val income: Int = 0,
     val foodExpense: Int = 0,

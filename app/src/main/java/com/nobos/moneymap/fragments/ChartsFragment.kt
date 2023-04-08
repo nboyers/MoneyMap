@@ -1,4 +1,3 @@
-import com.nobos.moneymap.models.Budget
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,23 +10,21 @@ import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import com.nobos.moneymap.R
+import com.google.firebase.database.FirebaseDatabase
 
+import com.nobos.moneymap.R
+import com.nobos.moneymap.models.Budget
 
 class ChartsFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
 
-    private lateinit var db: FirebaseFirestore
-
+    private lateinit var db: FirebaseDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
-        db = Firebase.firestore
+        db = FirebaseDatabase.getInstance()
     }
 
     override fun onCreateView(
@@ -82,21 +79,16 @@ class ChartsFragment : Fragment() {
         }
     }
 
-
     private fun fetchUserData(onSuccess: (List<Budget>) -> Unit) {
         val currentUser = auth.currentUser
 
         currentUser?.let { user ->
             val userId = user.uid
 
-            db.collection("budgets")
-                .whereEqualTo("userId", userId)
+            db.reference.child("Budget").child(userId)
                 .get()
-                .addOnSuccessListener { documents ->
-                    val budgets = documents.map { document ->
-                        document.toObject(Budget::class.java)
-                    }
-
+                .addOnSuccessListener { snapshot ->
+                    val budgets = snapshot.children.mapNotNull { it.getValue(Budget::class.java) }
                     onSuccess(budgets)
                 }
                 .addOnFailureListener { e ->
@@ -105,62 +97,6 @@ class ChartsFragment : Fragment() {
                 }
         }
     }
-
-
-
-
-    // Add the function to calculate the average budget or any other aggregation you want to display
-    private fun calculateAverageBudget(budgets: List<Budget>, periodType: String): Budget {
-        val totalBudgets = budgets.size
-
-        var totalIncome = budgets.sumOf { it.income }
-        var totalFoodExpense = budgets.sumOf { it.foodExpense }
-        var totalGasExpense = budgets.sumOf { it.gasExpense }
-        var totalEntertainmentExpense = budgets.sumOf { it.entertainmentExpense }
-        var totalSavings = budgets.sumOf { it.savings }
-
-        for (budget in budgets) {
-            when (periodType) {
-                "weekly" -> {
-                    totalIncome += budget.income / 4
-                    totalFoodExpense += budget.foodExpense / 4
-                    totalGasExpense += budget.gasExpense / 4
-                    totalEntertainmentExpense += budget.entertainmentExpense / 4
-                    totalSavings += budget.savings / 4
-                }
-                "monthly" -> {
-                    totalIncome += budget.income
-                    totalFoodExpense += budget.foodExpense
-                    totalGasExpense += budget.gasExpense
-                    totalEntertainmentExpense += budget.entertainmentExpense
-                    totalSavings += budget.savings
-                }
-                "yearly" -> {
-                    totalIncome += budget.income * 12
-                    totalFoodExpense += budget.foodExpense * 12
-                    totalGasExpense += budget.gasExpense * 12
-                    totalEntertainmentExpense += budget.entertainmentExpense * 12
-                    totalSavings += budget.savings * 12
-                }
-            }
-        }
-
-        val averageIncome = totalIncome / totalBudgets
-        val averageFoodExpense = totalFoodExpense / totalBudgets
-        val averageGasExpense = totalGasExpense / totalBudgets
-        val averageEntertainmentExpense = totalEntertainmentExpense / totalBudgets
-        val averageSavings = totalSavings / totalBudgets
-
-        return Budget(
-            income = averageIncome,
-            foodExpense = averageFoodExpense,
-            gasExpense = averageGasExpense,
-            entertainmentExpense = averageEntertainmentExpense,
-            savings = averageSavings,
-            periodType = periodType // pass the periodType parameter here
-        )
-    }
-
 
     private fun setupBarChart(
         barChart: BarChart,
@@ -271,5 +207,57 @@ class ChartsFragment : Fragment() {
 
         // Refresh the chart
         pieChart.invalidate()
+    }
+
+    // Add the function to calculate the average budget or any other aggregation you want to display
+    private fun calculateAverageBudget(budgets: List<Budget>, periodType: String): Budget {
+        val totalBudgets = budgets.size
+
+        var totalIncome = budgets.sumOf { it.income }
+        var totalFoodExpense = budgets.sumOf { it.foodExpense }
+        var totalGasExpense = budgets.sumOf { it.gasExpense }
+        var totalEntertainmentExpense = budgets.sumOf { it.entertainmentExpense }
+        var totalSavings = budgets.sumOf { it.savings }
+
+        for (budget in budgets) {
+            when (periodType) {
+                "weekly" -> {
+                    totalIncome += budget.income / 4
+                    totalFoodExpense += budget.foodExpense / 4
+                    totalGasExpense += budget.gasExpense / 4
+                    totalEntertainmentExpense += budget.entertainmentExpense / 4
+                    totalSavings += budget.savings / 4
+                }
+                "monthly" -> {
+                    totalIncome += budget.income
+                    totalFoodExpense += budget.foodExpense
+                    totalGasExpense += budget.gasExpense
+                    totalEntertainmentExpense += budget.entertainmentExpense
+                    totalSavings += budget.savings
+                }
+                "yearly" -> {
+                    totalIncome += budget.income * 12
+                    totalFoodExpense += budget.foodExpense * 12
+                    totalGasExpense += budget.gasExpense * 12
+                    totalEntertainmentExpense += budget.entertainmentExpense * 12
+                    totalSavings += budget.savings * 12
+                }
+            }
+        }
+
+        val averageIncome = totalIncome / totalBudgets
+        val averageFoodExpense = totalFoodExpense / totalBudgets
+        val averageGasExpense = totalGasExpense / totalBudgets
+        val averageEntertainmentExpense = totalEntertainmentExpense / totalBudgets
+        val averageSavings = totalSavings / totalBudgets
+
+        return Budget(
+            income = averageIncome,
+            foodExpense = averageFoodExpense,
+            gasExpense = averageGasExpense,
+            entertainmentExpense = averageEntertainmentExpense,
+            savings = averageSavings,
+            periodType = periodType // pass the periodType parameter here
+        )
     }
 }

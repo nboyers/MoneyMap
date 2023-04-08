@@ -1,30 +1,47 @@
 package com.nobos.moneymap
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.nobos.moneymap.firebase.SignUpActivity
+import com.nobos.moneymap.fragments.MyPagerAdapter
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mAuth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
 
+    @Override
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
+        // Initialize FirebaseAuth instance
         mAuth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
 
-        // Check if the user is logged in, otherwise navigate to LoginActivity
+        // Check if the user is logged in
         val currentUser = mAuth.currentUser
+        if (currentUser == null) {
+            // Navigate to SignUpActivity if the user is not signed in
+            startActivity(Intent(this, SignUpActivity::class.java))
+            finish()
+        } else {
+            setContentView(R.layout.activity_main)
 
-        if (currentUser != null) {
-            if (currentUser.isEmailVerified) {
-                startActivity(Intent(this, MainActivity::class.java))
-                this.finish()
-            }
+            val viewPager: ViewPager2 = findViewById(R.id.viewPager)
+            val tabLayout: TabLayout = findViewById(R.id.tabLayout)
+
+            viewPager.adapter = MyPagerAdapter(this)
+
+            // Connect the TabLayout with the ViewPager2
+            TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+                when (position) {
+                    0 -> tab.text = "Summary"
+                    1 -> tab.text = "Charts"
+                }
+            }.attach()
         }
     }
 }

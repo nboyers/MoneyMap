@@ -1,16 +1,13 @@
 package com.nobos.moneymap.fragments
-
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
+import android.widget.*
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.FirebaseDatabase
 import com.nobos.moneymap.R
 import com.nobos.moneymap.firebase.LoginActivity
 import com.nobos.moneymap.models.Budget
@@ -18,7 +15,14 @@ import com.nobos.moneymap.models.Budget
 class SummaryFragment : Fragment() {
 
     private lateinit var mAuth: FirebaseAuth
-    private lateinit var db: FirebaseFirestore
+    private lateinit var totalIncomeTextView: TextView
+    private lateinit var foodExpenseEditText: EditText
+    private lateinit var gasExpenseEditText: EditText
+    private lateinit var entertainmentExpenseEditText: EditText
+    private lateinit var savingsEditText: EditText
+    private lateinit var periodSpinner: Spinner
+    private lateinit var database: FirebaseDatabase
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,93 +35,21 @@ class SummaryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize UI components
-        val totalIncomeTextView: TextView = view.findViewById(R.id.totalIncomeTextView)
-        val remainingBalanceTextView: TextView = view.findViewById(R.id.remainingBalanceTextView)
-        val incomeEditText: EditText = view.findViewById(R.id.incomeEditText)
-        val foodExpenseEditText: EditText = view.findViewById(R.id.foodExpenseEditText)
-        val gasExpenseEditText: EditText = view.findViewById(R.id.gasExpenseEditText)
-        val entertainmentExpenseEditText: EditText =
-            view.findViewById(R.id.entertainmentExpenseEditText)
-        val savingsEditText: EditText = view.findViewById(R.id.savingsEditText)
-        val saveButton: Button = view.findViewById(R.id.saveButton)
-        val signOutButton: Button = view.findViewById(R.id.signOutButton)
-
         mAuth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
+        database = FirebaseDatabase.getInstance()
 
-        // Check if the user is logged in, otherwise navigate to LoginActivity
-        val currentUser = mAuth.currentUser
 
-        if (currentUser == null) {
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
-            requireActivity().finish()
-        } else if (!currentUser.isEmailVerified) {
-            startActivity(Intent(requireContext(), LoginActivity::class.java))
-            requireActivity().finish()
-        }
+        // Retrieve the views from the fragment view
+        totalIncomeTextView = view.findViewById(R.id.totalIncomeTextView)
+        foodExpenseEditText = view.findViewById(R.id.foodExpenseEditText)
+        gasExpenseEditText = view.findViewById(R.id.gasExpenseEditText)
+        entertainmentExpenseEditText = view.findViewById(R.id.entertainmentExpenseEditText)
+        savingsEditText = view.findViewById(R.id.savingsEditText)
+        periodSpinner = view.findViewById(R.id.periodSpinner)
 
-        saveButton.setOnClickListener {
-            val income = incomeEditText.text.toString().toIntOrNull()
-            val foodExpense = foodExpenseEditText.text.toString().toIntOrNull()
-            val gasExpense = gasExpenseEditText.text.toString().toIntOrNull()
-            val entertainmentExpense = entertainmentExpenseEditText.text.toString().toIntOrNull()
-            val savings = savingsEditText.text.toString().toIntOrNull()
-
-            currentUser?.let { user ->
-                val userId = user.uid
-                val budget = Budget(
-                    id = userId,
-                    userId = userId,
-                    income = income ?: 0,
-                    foodExpense = foodExpense ?: 0,
-                    gasExpense = gasExpense ?: 0,
-                    entertainmentExpense = entertainmentExpense ?: 0,
-                    savings = savings ?: 0,
-                    timestamp = System.currentTimeMillis()
-                )
-
-                db.collection("budgets").document(userId).set(budget)
-                    .addOnSuccessListener {
-                        // Handle success
-                    }
-                    .addOnFailureListener { e ->
-                        // Handle failure
-                        e.stackTraceToString()
-                    }
-            }
-        }
-
-        // Fetch data from Realtime database and update UI
-        currentUser?.let { user ->
-            val userId = user.uid
-            db.collection("budgets").document(userId).get()
-                .addOnSuccessListener { document ->
-                    if (document != null) {
-                        val budget = document.toObject(Budget::class.java)
-
-                        budget?.let { b ->
-                            totalIncomeTextView.text = b.income.toString()
-                            val remainingBalance =
-                                b.income - b.foodExpense - b.gasExpense - b.entertainmentExpense - b.savings
-                            remainingBalanceTextView.text = remainingBalance.toString()
-                        }
-                    }
-                }
-                .addOnFailureListener { e ->
-                    // Handle failure
-                    e.stackTraceToString()
-                }
-        }
-
-        // Set an OnClickListener to the sign out button
-        // Sign out
-        signOutButton.setOnClickListener {
-            mAuth.signOut()
-            val intent = Intent(requireContext(), LoginActivity::class.java)
-            startActivity(intent)
-            requireActivity().finish()
-        }
+        // Move the relevant code from MainActivity to here
+        // Initialize UI components and set up listeners and data fetching
+        val signOutButton: Button = view.findViewById(R.id.signOutButton)
 
         // Set an OnClickListener to the sign out button
         signOutButton.setOnClickListener {
@@ -125,6 +57,42 @@ class SummaryFragment : Fragment() {
             val intent = Intent(requireContext(), LoginActivity::class.java)
             startActivity(intent)
             requireActivity().finish()
+        }
+        val saveButton: Button = view.findViewById(R.id.saveButton)
+        saveButton.setOnClickListener {
+            val income = totalIncomeTextView.text.toString().toIntOrNull() ?: 0
+            val foodExpense = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val gasExpense = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val entertainmentExpense = entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val savings = savingsEditText.text.toString().toIntOrNull() ?: 0
+            val periodType = periodSpinner.selectedItem.toString()
+
+            // Create a new budget object
+            val budget = Budget(
+                userId = mAuth.currentUser?.uid ?: "",
+                income = income,
+                foodExpense = foodExpense,
+                gasExpense = gasExpense,
+                entertainmentExpense = entertainmentExpense,
+                savings = savings,
+                periodType = periodType,
+                timestamp = System.currentTimeMillis()
+            )
+
+            // Generate a new key for the budget object
+            val budgetRef = database.getReference("Budget")
+            val userId = mAuth.currentUser?.uid ?: ""
+
+            // Add the budget object to the database
+            budgetRef.child(userId).setValue(budget)
+                .addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Budget saved", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Failed to save budget", Toast.LENGTH_SHORT)
+                        .show()
+                }
         }
     }
 }
