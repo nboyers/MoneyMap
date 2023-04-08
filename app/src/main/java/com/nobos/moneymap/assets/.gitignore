@@ -11,7 +11,8 @@ local.properties
 
 # Log/OS Files
 *.log
-
+*.lock
+*.bin
 # Android Studio generated files and folders
 captures/
 .externalNativeBuild/
