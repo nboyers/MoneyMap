@@ -4,18 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/goToSignUpButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/go_to_sign_up"
-        android:backgroundTint="@color/orange"
-        android:textColor="@color/black"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp" />
-
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
@@ -73,7 +61,13 @@
             android:stateListAnimator="@null"
             android:text="@string/login"
             android:textColor="@color/black" />
-
+        <Button
+            android:id="@+id/goToSignUpButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sign_up"
+            android:backgroundTint="@color/orange"
+            android:textColor="@color/black" />
 
         <TextView
             android:id="@+id/forgotPasswordTextView"
