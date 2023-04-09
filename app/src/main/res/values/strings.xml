@@ -44,5 +44,15 @@
     <string name="period_prompt">Select a period:</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="create_account">Create Account</string>
+    <string name="error_email_empty">Please enter your email</string>
+    <string name="error_password_empty">Please create a password</string>
+    <string name="error_email_registered">Email is already registered</string>
+    <string name="error_signup_failed">Error: Signup Failed</string>
+    <string name="error_fetch_signin_methods">Unable to fetch sign-in methods. Please check your internet connection and try again.</string>
+    <string name="already_registered">Already Registered?</string>
+    <string name="go_to_sign_up">Back to Signup</string>
+    <string name="line_chart">Line Chart</string>
+    <string name="bar_chart">Bar Chart</string>
+    <string name="pie_chart">Pie Chart</string>
 
 </resources>

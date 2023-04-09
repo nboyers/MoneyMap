@@ -18,7 +18,6 @@ import com.nobos.moneymap.models.Budget
 class ChartsFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
-
     private lateinit var db: FirebaseDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,7 +97,7 @@ class ChartsFragment : Fragment() {
         }
     }
 
-    private fun setupBarChart(
+    private fun setupBarChart (
         barChart: BarChart,
         income: Int,
         foodExpense: Int,

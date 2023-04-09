@@ -1,6 +1,3 @@
-# Created by https://www.toptal.com/developers/gitignore/api/android,androidstudio,kotlin,firebase
-# Edit at https://www.toptal.com/developers/gitignore?templates=android,androidstudio,kotlin,firebase
-
 ### Android ###
 # Gradle files
 .gradle/
@@ -13,6 +10,7 @@ local.properties
 *.log
 *.lock
 *.bin
+
 # Android Studio generated files and folders
 captures/
 .externalNativeBuild/

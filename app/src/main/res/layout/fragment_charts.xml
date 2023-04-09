@@ -17,7 +17,7 @@
             android:id="@+id/lineChartTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Line Chart"
+            android:text="@string/line_chart"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -33,7 +33,7 @@
             android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bar Chart"
+            android:text="@string/bar_chart"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginTop="16dp" />
@@ -49,7 +49,7 @@
             android:id="@+id/pieChartTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pie Chart"
+            android:text="@string/pie_chart"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginTop="16dp" />

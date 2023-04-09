@@ -1,6 +1,8 @@
 package com.nobos.moneymap.fragments
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,7 +49,6 @@ class SummaryFragment : Fragment() {
         savingsEditText = view.findViewById(R.id.savingsEditText)
         periodSpinner = view.findViewById(R.id.periodSpinner)
 
-        // Move the relevant code from MainActivity to here
         // Initialize UI components and set up listeners and data fetching
         val signOutButton: Button = view.findViewById(R.id.signOutButton)
 
@@ -78,7 +79,21 @@ class SummaryFragment : Fragment() {
                 periodType = periodType,
                 timestamp = System.currentTimeMillis()
             )
+            val textWatcher = object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    updateTotals()
+                }
 
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            }
+
+            totalIncomeTextView.addTextChangedListener(textWatcher)
+            foodExpenseEditText.addTextChangedListener(textWatcher)
+            gasExpenseEditText.addTextChangedListener(textWatcher)
+            entertainmentExpenseEditText.addTextChangedListener(textWatcher)
+            savingsEditText.addTextChangedListener(textWatcher)
             // Generate a new key for the budget object
             val budgetRef = database.getReference("Budget")
             val userId = mAuth.currentUser?.uid ?: ""
@@ -94,5 +109,17 @@ class SummaryFragment : Fragment() {
                         .show()
                 }
         }
+    }
+    private fun updateTotals() {
+        val income = totalIncomeTextView.text.toString().toIntOrNull() ?: 0
+        val foodExpense = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
+        val gasExpense = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
+        val entertainmentExpense = entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
+        val savings = savingsEditText.text.toString().toIntOrNull() ?: 0
+
+        val remainingBalance = income - foodExpense - gasExpense - entertainmentExpense - savings
+        val remainingBalanceTextView: TextView = requireView().findViewById(R.id.remainingBalanceTextView)
+
+        remainingBalanceTextView.text = remainingBalance.toString()
     }
 }
