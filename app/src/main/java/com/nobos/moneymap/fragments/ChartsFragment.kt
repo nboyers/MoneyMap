@@ -2,18 +2,29 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.github.mikephil.charting.utils.ColorTemplate
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.utils.ColorTemplate
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.LineData
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 import com.nobos.moneymap.R
-import com.nobos.moneymap.models.Budget
+import com.nobos.moneymap.models.budget
 
 class ChartsFragment : Fragment() {
 
@@ -78,26 +89,31 @@ class ChartsFragment : Fragment() {
         }
     }
 
-    private fun fetchUserData(onSuccess: (List<Budget>) -> Unit) {
+
+    private fun fetchUserData(onSuccess: (List<budget>) -> Unit) {
         val currentUser = auth.currentUser
 
         currentUser?.let { user ->
             val userId = user.uid
 
-            db.reference.child("Budget").child(userId)
-                .get()
-                .addOnSuccessListener { snapshot ->
-                    val budgets = snapshot.children.mapNotNull { it.getValue(Budget::class.java) }
-                    onSuccess(budgets)
-                }
-                .addOnFailureListener { e ->
-                    // Handle failure
-                    e.stackTraceToString()
-                }
+            db.reference.child("budgets").child(userId)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val budgets =
+                            snapshot.children.mapNotNull { it.getValue(budget::class.java) }
+                        onSuccess(budgets)
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        // Handle failure
+                        error.toException().printStackTrace()
+                    }
+                })
         }
     }
 
-    private fun setupBarChart (
+
+    private fun setupBarChart(
         barChart: BarChart,
         income: Int,
         foodExpense: Int,
@@ -170,12 +186,14 @@ class ChartsFragment : Fragment() {
         lineChart.invalidate()
     }
 
-    private fun setupPieChart(pieChart: PieChart,
-                              income: Int,
-                              foodExpense: Int,
-                              gasExpense: Int,
-                              entertainmentExpense: Int,
-                              savings: Int) {
+    private fun setupPieChart(
+        pieChart: PieChart,
+        income: Int,
+        foodExpense: Int,
+        gasExpense: Int,
+        entertainmentExpense: Int,
+        savings: Int
+    ) {
         // Prepare the data
         val pieEntries = ArrayList<PieEntry>()
         pieEntries.add(PieEntry(income.toFloat(), "Income"))
@@ -209,8 +227,8 @@ class ChartsFragment : Fragment() {
     }
 
     // Add the function to calculate the average budget or any other aggregation you want to display
-    private fun calculateAverageBudget(budgets: List<Budget>, periodType: String): Budget {
-        val totalBudgets = budgets.size
+    private fun calculateAverageBudget(budgets: List<budget>, periodType: String): budget {
+        val totalbudgets = budgets.size
 
         var totalIncome = budgets.sumOf { it.income }
         var totalFoodExpense = budgets.sumOf { it.foodExpense }
@@ -244,13 +262,13 @@ class ChartsFragment : Fragment() {
             }
         }
 
-        val averageIncome = totalIncome / totalBudgets
-        val averageFoodExpense = totalFoodExpense / totalBudgets
-        val averageGasExpense = totalGasExpense / totalBudgets
-        val averageEntertainmentExpense = totalEntertainmentExpense / totalBudgets
-        val averageSavings = totalSavings / totalBudgets
+        val averageIncome = totalIncome / totalbudgets
+        val averageFoodExpense = totalFoodExpense / totalbudgets
+        val averageGasExpense = totalGasExpense / totalbudgets
+        val averageEntertainmentExpense = totalEntertainmentExpense / totalbudgets
+        val averageSavings = totalSavings / totalbudgets
 
-        return Budget(
+        return budget(
             income = averageIncome,
             foodExpense = averageFoodExpense,
             gasExpense = averageGasExpense,

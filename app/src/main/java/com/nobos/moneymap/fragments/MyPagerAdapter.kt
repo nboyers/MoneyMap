@@ -1,7 +1,6 @@
 package com.nobos.moneymap.fragments
 
 
-
 import ChartsFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity

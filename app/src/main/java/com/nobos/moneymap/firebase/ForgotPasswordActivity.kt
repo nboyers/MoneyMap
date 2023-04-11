@@ -38,13 +38,21 @@ class ForgotPasswordActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // Run the password reset email sending task on a background thread
             mAuth.sendPasswordResetEmail(email)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(this, "Check your email to reset your password", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(this, "Failed to send reset email. Please try again.", Toast.LENGTH_SHORT).show()
-                    }
+                .addOnSuccessListener {
+                    Toast.makeText(
+                        this,
+                        "Check your email to reset your password",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(
+                        this,
+                        "Failed to send reset email. Please try again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
         }
     }

@@ -2,16 +2,17 @@
 <project version="4">
   <component name="AndroidLayouts">
     <shared>
-      <config />
+      <config>
+        <device id="_device_class_phone" />
+        <option name="nonWearDeviceLastStateName" value="portrait" />
+      </config>
     </shared>
   </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ffb2fbe9-bbd4-488e-b967-fc9ab3402198" name="Changes" comment="Added back button and bugs that cause the app to crash">
-      <change beforePath="$PROJECT_DIR$/.gradle/7.5/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.5/checksums/checksums.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/7.5/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.5/checksums/sha1-checksums.bin" afterDir="false" />
+    <list default="true" id="ffb2fbe9-bbd4-488e-b967-fc9ab3402198" name="Changes" comment="Updated UI">
       <change beforePath="$PROJECT_DIR$/.gradle/7.5/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.5/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.5/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.5/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.5/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.5/fileHashes/fileHashes.bin" afterDir="false" />
@@ -21,16 +22,14 @@
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/assets/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/assets/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/firebase/ForgotPasswordActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/firebase/ForgotPasswordActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/firebase/LoginActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/firebase/LoginActivity.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/firebase/SignUpActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/firebase/SignUpActivity.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/fragments/ChartsFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/fragments/ChartsFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/fragments/MyPagerAdapter.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/fragments/MyPagerAdapter.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/fragments/SummaryFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/fragments/SummaryFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_sign_up.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_sign_up.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_charts.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_charts.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/models/Budget.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/nobos/moneymap/models/Budget.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +116,7 @@
     "project.structure.last.edited": "Dependencies",
     "project.structure.proportion": "0.17",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "build.tools"
+    "settings.editor.selected.configurable": "test.recorder"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -241,7 +240,21 @@
       <option name="project" value="LOCAL" />
       <updated>1680917305842</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Added back button and bugs that cause the app to crash">
+      <created>1681074696769</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1681074696769</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Updated UI">
+      <created>1681074990870</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1681074990870</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -262,6 +275,7 @@
     <MESSAGE value="updated .gitignore" />
     <MESSAGE value="Finished up Firebase auth and Database implementation" />
     <MESSAGE value="Added back button and bugs that cause the app to crash" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added back button and bugs that cause the app to crash" />
+    <MESSAGE value="Updated UI" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated UI" />
   </component>
 </project>

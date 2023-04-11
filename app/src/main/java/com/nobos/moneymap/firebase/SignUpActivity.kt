@@ -1,7 +1,5 @@
 package com.nobos.moneymap.firebase
 
-// SignUpActivity.kt
-
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -14,7 +12,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.nobos.moneymap.MainActivity
 import com.nobos.moneymap.R
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -78,47 +80,47 @@ class SignUpActivity : AppCompatActivity() {
             return
         }
 
-        mAuth.fetchSignInMethodsForEmail(email)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    task.result?.signInMethods?.let { signInMethods ->
-                            if (signInMethods.isNotEmpty()) {
-                                Toast.makeText(this, R.string.error_email_registered, Toast.LENGTH_SHORT).show()
-                                startActivity(Intent(this, LoginActivity::class.java))
-                                finish()
-                                return@addOnCompleteListener
-                            }
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val user = mAuth.fetchSignInMethodsForEmail(email).await()
+                if (user.signInMethods?.isNotEmpty() == true) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(
+                            this@SignUpActivity,
+                            R.string.error_email_registered,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        startActivity(Intent(this@SignUpActivity, LoginActivity::class.java))
+                        finish()
                     }
                 } else {
-                    Toast.makeText(this, R.string.error_fetch_signin_methods, Toast.LENGTH_SHORT).show()
-                    return@addOnCompleteListener
-                }
-
-                mAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this) { createUserTask ->
-                        if (createUserTask.isSuccessful) {
-                            startActivity(Intent(this, MainActivity::class.java))
-                            finish()
-                        } else {
-                            Toast.makeText(this, R.string.error_signup_failed, Toast.LENGTH_SHORT).show()
-                        }
+                    mAuth.createUserWithEmailAndPassword(email, password).await()
+                    withContext(Dispatchers.Main) {
+                        startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
+                        finish()
                     }
-
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        this@SignUpActivity,
+                        R.string.error_signup_failed,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
+        }
     }
 
-
-
-
+    // Override the onStart() method to add the auth state listener
     override fun onStart() {
         super.onStart()
         mAuth.addAuthStateListener(authStateListener)
     }
 
+    // Override the onStop() method to remove the auth state listener
     override fun onStop() {
         super.onStop()
         mAuth.removeAuthStateListener(authStateListener)
     }
 }
-
-
