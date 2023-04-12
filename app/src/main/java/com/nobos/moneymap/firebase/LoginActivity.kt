@@ -27,7 +27,7 @@ class LoginActivity : AppCompatActivity() {
     private val passwordEditText by lazy { findViewById<EditText>(R.id.passwordEditText) }
     private val loginButton by lazy { findViewById<Button>(R.id.loginButton) }
     private val forgotPasswordTextView by lazy { findViewById<TextView>(R.id.forgotPasswordTextView) }
-
+    private val signupButton by lazy { findViewById<Button>(R.id.signUpButton) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,16 +37,17 @@ class LoginActivity : AppCompatActivity() {
         // Initialize FirebaseAuth instance
         mAuth = FirebaseAuth.getInstance()
 
-        // Set an OnClickListener for the login button
-        loginButton.setOnClickListener {
-            signIn()
-        }
-
-        // Set an OnClickListener for the forgot password text view
-        forgotPasswordTextView.setOnClickListener {
-            resetPassword()
-        }
+        // Set an OnClickListener for the buttons
+        loginButton.setOnClickListener { signIn() }
+        signupButton.setOnClickListener { signUp() }
+        forgotPasswordTextView.setOnClickListener { resetPassword() }
     }
+
+    private fun signUp() {
+        val intent = Intent(this, SignUpActivity::class.java)
+        startActivity(intent)
+    }
+
 
     private fun signIn() = CoroutineScope(Dispatchers.Main).launch {
 

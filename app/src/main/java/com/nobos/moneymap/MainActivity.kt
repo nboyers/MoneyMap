@@ -9,7 +9,7 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.auth.FirebaseAuth
 import com.nobos.moneymap.firebase.SignUpActivity
-import com.nobos.moneymap.fragments.MyPagerAdapter
+import com.nobos.moneymap.adapters.MyPagerAdapter
 import kotlinx.coroutines.*
 
 class MainActivity : AppCompatActivity() {

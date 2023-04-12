@@ -1,10 +1,11 @@
-package com.nobos.moneymap.fragments
+package com.nobos.moneymap.adapters
 
 
 import ChartsFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.nobos.moneymap.fragments.SummaryFragment
 
 class MyPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
     override fun getItemCount(): Int = 2
