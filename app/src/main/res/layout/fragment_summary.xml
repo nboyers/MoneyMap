@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,8 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginTop="105dp"
-        android:layout_marginEnd="4dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="44dp"
         android:backgroundTint="#A30505"
         android:maxWidth="488dp"
         android:padding="8dp"
@@ -41,13 +40,15 @@
         android:id="@+id/monthRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="80dp"
         android:orientation="horizontal"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@id/incomeEditText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/signOutButton" />
+        app:layout_constraintTop_toBottomOf="@id/signOutButton"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/totalIncomeLabel"
@@ -99,6 +100,38 @@
     <!-- Income and Expense input fields -->
 
     <EditText
+        android:id="@+id/foodExpenseEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:autofillHints="Food Expense"
+        android:background="@color/white"
+        android:hint="@string/enter_food_expense"
+        android:inputType="number"
+        android:maxWidth="488dp"
+        android:padding="16dp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/incomeEditText" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="52dp"
+        android:backgroundTint="#0A580A"
+        android:maxWidth="320dp"
+        android:stateListAnimator="@null"
+        android:text="@string/save"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <EditText
         android:id="@+id/savingsEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -111,7 +144,7 @@
         android:padding="16dp"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/entertainmentExpenseEditText" />
 
@@ -128,7 +161,7 @@
         android:padding="16dp"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/gasExpenseEditText" />
 
@@ -145,32 +178,15 @@
         android:padding="16dp"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/foodExpenseEditText" />
-
-    <EditText
-        android:id="@+id/foodExpenseEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:autofillHints="Food Expense"
-        android:background="@color/white"
-        android:hint="@string/enter_food_expense"
-        android:inputType="number"
-        android:maxWidth="488dp"
-        android:padding="16dp"
-        android:textColor="@color/black"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/incomeEditText" />
 
     <EditText
         android:id="@+id/incomeEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="56dp"
+        android:layout_marginTop="48dp"
         android:autofillHints="Income Editor"
         android:background="@color/white"
         android:hint="@string/enter_income"
@@ -186,34 +202,17 @@
     <Button
         android:id="@+id/selectDateButton"
         android:layout_width="320dp"
-
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginBottom="152dp"
+        android:layout_marginBottom="8dp"
         android:backgroundTint="@color/darker_gray"
         android:maxWidth="320dp"
         android:stateListAnimator="@null"
+
         android:text="@string/select_date"
         android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/saveButton"
         app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/saveButton"
-        android:layout_width="320dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="104dp"
-        android:backgroundTint="#0A580A"
-        android:maxWidth="320dp"
-        android:stateListAnimator="@null"
-        android:text="@string/save"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
 
