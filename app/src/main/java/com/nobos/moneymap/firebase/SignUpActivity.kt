@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.text.method.PasswordTransformationMethod
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -40,11 +41,14 @@ class SignUpActivity : AppCompatActivity() {
         val emailEditText: EditText = findViewById(R.id.emailEditText)
         val passwordEditText: EditText = findViewById(R.id.passwordEditText)
         val confirmPasswordEditText: EditText = findViewById(R.id.confirmPasswordEditText)
+
         val signUpButton: Button = findViewById(R.id.signUpButton)
         val alreadyRegisteredButton: Button = findViewById(R.id.alreadyRegisteredButton)
 
+
         alreadyRegisteredButton.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
+
             startActivity(intent)
         }
 
@@ -59,6 +63,7 @@ class SignUpActivity : AppCompatActivity() {
                 Toast.makeText(this, "Passwords do not match.", Toast.LENGTH_SHORT).show()
             }
         }
+
 // Disables text selection and long click on the confirm password EditText view
         confirmPasswordEditText.apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
@@ -79,9 +84,13 @@ class SignUpActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.error_password_empty, Toast.LENGTH_SHORT).show()
             return
         }
-
+//FIXME: Crashing when the user clicks the buttons
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d("Button IDs", "loginButton ID: ${R.id.loginButton}")
+            Log.d("Button IDs", "signupButton ID: ${R.id.signUpButton}")
+            Log.d("Button IDs", "forgotPasswordTextView ID: ${R.id.forgotPasswordTextView}")
             try {
+
                 val user = mAuth.fetchSignInMethodsForEmail(email).await()
                 if (user.signInMethods?.isNotEmpty() == true) {
                     withContext(Dispatchers.Main) {

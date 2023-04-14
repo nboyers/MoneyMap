@@ -25,17 +25,19 @@ class LoginActivity : AppCompatActivity() {
     // Declare views using Kotlin Android Extensions
     private val emailEditText by lazy { findViewById<EditText>(R.id.emailEditText) }
     private val passwordEditText by lazy { findViewById<EditText>(R.id.passwordEditText) }
-    private val loginButton by lazy { findViewById<Button>(R.id.loginButton) }
-    private val forgotPasswordTextView by lazy { findViewById<TextView>(R.id.forgotPasswordTextView) }
-    private val signupButton by lazy { findViewById<Button>(R.id.signUpButton) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         // Set the layout for the activity
         setContentView(R.layout.activity_login)
 
         // Initialize FirebaseAuth instance
         mAuth = FirebaseAuth.getInstance()
+
+        val loginButton = findViewById<Button>(R.id.loginButton)
+        val forgotPasswordTextView = findViewById<TextView>(R.id.forgotPasswordTextView)
+        val signupButton = findViewById<Button>(R.id.goToSignUpButton)
 
         // Set an OnClickListener for the buttons
         loginButton.setOnClickListener { signIn() }

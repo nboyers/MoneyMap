@@ -1,48 +1,45 @@
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.github.mikephil.charting.utils.ColorTemplate
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-
 import com.nobos.moneymap.R
-import com.nobos.moneymap.models.budget
+import com.nobos.moneymap.models.Budget
+import java.util.*
+
 
 class ChartsFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseDatabase
+    companion object {
+        private const val ARG_SELECTED_MONTH = "selected_month"
+        private const val ARG_SELECTED_YEAR = "selected_year"
+
+        @JvmStatic
+        fun newInstance(selectedMonth: Int, selectedYear: Int) =
+            ChartsFragment().apply {
+                arguments = Bundle().apply {
+                    putInt(ARG_SELECTED_MONTH, selectedMonth)
+                    putInt(ARG_SELECTED_YEAR, selectedYear)
+                }
+            }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
         db = FirebaseDatabase.getInstance()
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_charts, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -53,44 +50,32 @@ class ChartsFragment : Fragment() {
         val lineChart: LineChart = view.findViewById(R.id.lineChart)
         val pieChart: PieChart = view.findViewById(R.id.pieChart)
 
-        fetchUserData { budgets ->
-            if (budgets.isNotEmpty()) {
-                val averageBudget = calculateAverageBudget(
-                    budgets,
-                    periodType = budgets.first().periodType
-                )
+        // Retrieve the selected month and year from the arguments bundle
+        val selectedMonth = arguments?.getInt(ARG_SELECTED_MONTH) ?: 1
+        val selectedYear = arguments?.getInt(ARG_SELECTED_YEAR) ?: 2022
 
-                // Set up the charts with the data
-                setupBarChart(
-                    barChart,
-                    averageBudget.income,
-                    averageBudget.foodExpense,
-                    averageBudget.gasExpense,
-                    averageBudget.entertainmentExpense,
-                    averageBudget.savings
-                )
-                setupLineChart(
-                    lineChart,
-                    averageBudget.income,
-                    averageBudget.foodExpense,
-                    averageBudget.gasExpense,
-                    averageBudget.entertainmentExpense,
-                    averageBudget.savings
-                )
-                setupPieChart(
-                    pieChart,
-                    averageBudget.income,
-                    averageBudget.foodExpense,
-                    averageBudget.gasExpense,
-                    averageBudget.entertainmentExpense,
-                    averageBudget.savings
-                )
-            }
+        // Fetch data for the selected month and year
+        fetchUserData { budgets ->
+            val selectedMonthBudget = budgets
+                .filter { budget -> budget.periodType == "monthly" }
+                .filter { budget -> budget.month == selectedMonth && budget.year == selectedYear }
+
+            // Aggregate the data for the selected month and year
+            val totalIncome = selectedMonthBudget.sumOf { it.income }
+            val totalFoodExpense = selectedMonthBudget.sumOf { it.foodExpense }
+            val totalGasExpense = selectedMonthBudget.sumOf { it.gasExpense }
+            val totalEntertainmentExpense = selectedMonthBudget.sumOf { it.entertainmentExpense }
+            val totalSavings = selectedMonthBudget.sumOf { it.savings }
+
+            // Set up and populate the charts with the data
+            setupBarChart(barChart, totalIncome, totalFoodExpense, totalGasExpense, totalEntertainmentExpense, totalSavings)
+            setupLineChart(lineChart, totalIncome, totalFoodExpense, totalGasExpense, totalEntertainmentExpense, totalSavings)
+            setupPieChart(pieChart, totalIncome, totalFoodExpense, totalGasExpense, totalEntertainmentExpense, totalSavings)
         }
     }
 
 
-    private fun fetchUserData(onSuccess: (List<budget>) -> Unit) {
+    private fun fetchUserData(onSuccess: (List<Budget>) -> Unit) {
         val currentUser = auth.currentUser
 
         currentUser?.let { user ->
@@ -100,7 +85,7 @@ class ChartsFragment : Fragment() {
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val budgets =
-                            snapshot.children.mapNotNull { it.getValue(budget::class.java) }
+                            snapshot.children.mapNotNull { it.getValue(Budget::class.java) }
                         onSuccess(budgets)
                     }
 
@@ -111,7 +96,6 @@ class ChartsFragment : Fragment() {
                 })
         }
     }
-
 
     private fun setupBarChart(
         barChart: BarChart,
@@ -224,57 +208,5 @@ class ChartsFragment : Fragment() {
 
         // Refresh the chart
         pieChart.invalidate()
-    }
-
-    // Add the function to calculate the average budget or any other aggregation you want to display
-    private fun calculateAverageBudget(budgets: List<budget>, periodType: String): budget {
-        val totalbudgets = budgets.size
-
-        var totalIncome = budgets.sumOf { it.income }
-        var totalFoodExpense = budgets.sumOf { it.foodExpense }
-        var totalGasExpense = budgets.sumOf { it.gasExpense }
-        var totalEntertainmentExpense = budgets.sumOf { it.entertainmentExpense }
-        var totalSavings = budgets.sumOf { it.savings }
-
-        for (budget in budgets) {
-            when (periodType) {
-                "weekly" -> {
-                    totalIncome += budget.income / 4
-                    totalFoodExpense += budget.foodExpense / 4
-                    totalGasExpense += budget.gasExpense / 4
-                    totalEntertainmentExpense += budget.entertainmentExpense / 4
-                    totalSavings += budget.savings / 4
-                }
-                "monthly" -> {
-                    totalIncome += budget.income
-                    totalFoodExpense += budget.foodExpense
-                    totalGasExpense += budget.gasExpense
-                    totalEntertainmentExpense += budget.entertainmentExpense
-                    totalSavings += budget.savings
-                }
-                "yearly" -> {
-                    totalIncome += budget.income * 12
-                    totalFoodExpense += budget.foodExpense * 12
-                    totalGasExpense += budget.gasExpense * 12
-                    totalEntertainmentExpense += budget.entertainmentExpense * 12
-                    totalSavings += budget.savings * 12
-                }
-            }
-        }
-
-        val averageIncome = totalIncome / totalbudgets
-        val averageFoodExpense = totalFoodExpense / totalbudgets
-        val averageGasExpense = totalGasExpense / totalbudgets
-        val averageEntertainmentExpense = totalEntertainmentExpense / totalbudgets
-        val averageSavings = totalSavings / totalbudgets
-
-        return budget(
-            income = averageIncome,
-            foodExpense = averageFoodExpense,
-            gasExpense = averageGasExpense,
-            entertainmentExpense = averageEntertainmentExpense,
-            savings = averageSavings,
-            periodType = periodType // pass the periodType parameter here
-        )
     }
 }

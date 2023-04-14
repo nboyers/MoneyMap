@@ -1,31 +1,38 @@
 package com.nobos.moneymap.fragments
 
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.DatePicker
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import com.nobos.moneymap.R
-import com.nobos.moneymap.adapters.DailyExpenseAdapter
 import com.nobos.moneymap.firebase.LoginActivity
-import com.nobos.moneymap.formating.RecyclerViewBorder
-import com.nobos.moneymap.models.budget
+import com.nobos.moneymap.models.Budget
+import com.nobos.moneymap.viewModels.SummaryViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.Calendar
 
 
 class SummaryFragment : Fragment() {
@@ -39,7 +46,7 @@ class SummaryFragment : Fragment() {
     private lateinit var savingsEditText: EditText
     private lateinit var periodSpinner: Spinner
     private lateinit var database: FirebaseDatabase
-
+    private lateinit var summaryViewModel: SummaryViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,36 +58,58 @@ class SummaryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        summaryViewModel = ViewModelProvider(this)[SummaryViewModel::class.java]
 
         mAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
 
+        val monthContainer: RecyclerView = view.findViewById(R.id.monthRecyclerView)
+
+        // Set a horizontal LinearLayoutManager for the monthContainer
+        val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        monthContainer.layoutManager = layoutManager
+
+        val userCalendar = Calendar.getInstance()
+        val currentYear = userCalendar.get(Calendar.YEAR)
+
+
+        val monthAbbreviations = arrayOf(
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        )
+
+        // Initialize the monthlyExpenseAdapter
+        val monthsContainer: LinearLayout = view.findViewById(R.id.monthsContainer)
+
+        for (month in monthAbbreviations) {
+            val monthView = createMonthView(month)
+
+            monthView.setOnClickListener {
+                //TODO: Handle month view click event
+            }
+            monthsContainer.addView(monthView)
+        }
+
+
+
+
         // Retrieve the views from the fragment view
+        val signOutButton: Button = view.findViewById(R.id.signOutButton)
+        val saveButton: Button = view.findViewById(R.id.saveButton)
+
         totalIncomeEditText = view.findViewById(R.id.incomeEditText)
         foodExpenseEditText = view.findViewById(R.id.foodExpenseEditText)
         gasExpenseEditText = view.findViewById(R.id.gasExpenseEditText)
         entertainmentExpenseEditText = view.findViewById(R.id.entertainmentExpenseEditText)
         savingsEditText = view.findViewById(R.id.savingsEditText)
-        periodSpinner = view.findViewById(R.id.periodSpinner)
-
-        // Initialize the RecyclerView and its adapter
-        val dailyExpenseRecyclerView: RecyclerView = view.findViewById(R.id.dailyExpenseRecyclerView)
-        val dailyExpenseAdapter = DailyExpenseAdapter(emptyList()) { budget ->
-            //TODO: Update chartsView with the data from the clicked budget
-
+        val selectDateButton: Button = view.findViewById(R.id.selectDateButton)
+        selectDateButton.setOnClickListener {
+            showDatePickerDialog()
         }
 
-        // Add a border around the RecyclerView
-        val borderSize = resources.getDimension(R.dimen.recycler_view_border_size)
-        val borderColor = ContextCompat.getColor(requireContext(), R.color.black)
-        dailyExpenseRecyclerView.addItemDecoration(RecyclerViewBorder(borderSize, borderColor))
 
-        dailyExpenseRecyclerView.adapter = dailyExpenseAdapter
-
-        // Fetch the data for the entire month and update the RecyclerView
         val userId = mAuth.currentUser?.uid ?: ""
-        val budgetRef = database.getReference("Budget").child(userId)
         val calendar = Calendar.getInstance()
         val monthStart = calendar.apply {
             set(Calendar.DAY_OF_MONTH, 1)
@@ -94,25 +123,6 @@ class SummaryFragment : Fragment() {
             add(Calendar.DAY_OF_MONTH, -1)
         }.timeInMillis
 
-        budgetRef.orderByChild("timestamp")
-            .startAt(monthStart.toDouble())
-            .endAt(monthEnd.toDouble())
-            .addValueEventListener(object : ValueEventListener {
-
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val budgets = snapshot.children.mapNotNull { it.getValue(budget::class.java) }
-                    dailyExpenseAdapter.updateDailyExpenses(budgets)
-                    dailyExpenseRecyclerView.visibility = if (budgets.isNotEmpty()) View.VISIBLE else View.GONE
-                }
-
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle error
-                }
-            })
-
-        // Initialize UI components and set up listeners and data fetching
-        val signOutButton: Button = view.findViewById(R.id.signOutButton)
 
         // Set an OnClickListener to the sign out button
         signOutButton.setOnClickListener {
@@ -121,7 +131,7 @@ class SummaryFragment : Fragment() {
             startActivity(intent)
             requireActivity().finish()
         }
-        val saveButton: Button = view.findViewById(R.id.saveButton)
+
         saveButton.setOnClickListener {
             val income = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
             val foodExpense = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
@@ -132,7 +142,7 @@ class SummaryFragment : Fragment() {
             val periodType = periodSpinner.selectedItem.toString()
 
             // Create a new budget object
-            val budget = budget(
+            val budget = Budget(
                 userId = mAuth.currentUser?.uid ?: "",
                 income = income,
                 foodExpense = foodExpense,
@@ -142,12 +152,9 @@ class SummaryFragment : Fragment() {
                 periodType = periodType,
                 timestamp = System.currentTimeMillis()
             )
-            // Generate a new key for the budget object
-            val newBudgetRef = database.getReference("Budget")
-            val newUserId = mAuth.currentUser?.uid ?: ""
 
-            // Add the budget object to the database
-            newBudgetRef.child(newUserId).setValue(budget)
+            // Save the budget using the ViewModel
+            summaryViewModel.saveBudget(budget)
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "Budget saved", Toast.LENGTH_SHORT)
                         .show()
@@ -173,7 +180,47 @@ class SummaryFragment : Fragment() {
         gasExpenseEditText.addTextChangedListener(textWatcher)
         entertainmentExpenseEditText.addTextChangedListener(textWatcher)
         savingsEditText.addTextChangedListener(textWatcher)
+
+
     }
+
+    private fun showDatePickerDialog() {
+        val datePickerDialog =
+            LayoutInflater.from(requireContext()).inflate(R.layout.date_picker_dialog, null)
+        val datePicker = datePickerDialog.findViewById<DatePicker>(R.id.datePickerDialog)
+
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setView(datePickerDialog)
+            .setPositiveButton("OK") { _, _ ->
+                // Retrieve the selected date values
+                val day = datePicker.dayOfMonth
+                val month = datePicker.month
+                val year = datePicker.year
+
+                // Use the selected date values according to your app's requirements
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        alertDialog.show()
+    }
+
+    private fun createMonthView(monthText: String): TextView {
+        val monthView = TextView(requireContext())
+        val layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        layoutParams.setMargins(8, 8, 8, 8)
+        monthView.layoutParams = layoutParams
+        monthView.gravity = Gravity.CENTER
+        monthView.text = monthText
+        monthView.setTextColor(Color.WHITE)
+        monthView.setBackgroundResource(R.drawable.square_month_background) // You'll need to create this background
+        monthView.setPadding(16, 16, 16, 16)
+        return monthView
+    }
+
 
     private fun updateTotals() {
         val income = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
@@ -189,7 +236,8 @@ class SummaryFragment : Fragment() {
             }
 
             // Update the income and remaining balance TextView
-            val remainingBalanceTextView: TextView = requireView().findViewById(R.id.remainingBalanceTextView)
+            val remainingBalanceTextView: TextView =
+                requireView().findViewById(R.id.remainingBalanceTextView)
             remainingBalanceTextView.text = remainingBalance.toString()
 
             // Change the color of the remaining balance based on whether it's positive or negative

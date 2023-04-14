@@ -1,163 +1,220 @@
-<ScrollView
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primaryBlue">
+    android:background="@color/primaryBlue"
+    tools:layout_editor_absoluteX="10dp"
+    tools:layout_editor_absoluteY="0dp">
+
+    <Button
+        android:id="@+id/signOutButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="105dp"
+        android:layout_marginEnd="4dp"
+        android:backgroundTint="#A30505"
+        android:maxWidth="488dp"
+        android:padding="8dp"
+        android:stateListAnimator="@null"
+        android:text="@string/sign_out"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/monthsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/remainingBalanceLabel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
-            <Button
-                android:id="@+id/signOutButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginTop="8dp"
-                android:backgroundTint="@color/black"
-                android:padding="8dp"
-                android:maxWidth="488dp"
-                android:stateListAnimator="@null"
-                android:text="@string/sign_out"
-                android:textColor="@color/white" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/monthRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/signOutButton" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/dailyExpenseRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="20dp"
-                android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+    <TextView
+        android:id="@+id/totalIncomeLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:text="@string/total_income"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/monthRecyclerView" />
+
+    <TextView
+        android:id="@+id/totalIncomeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@id/totalIncomeLabel"
+        app:layout_constraintTop_toBottomOf="@id/totalIncomeLabel" />
+
+    <TextView
+        android:id="@+id/remainingBalanceLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="108dp"
+        android:layout_marginTop="12dp"
+        android:text="@string/remaining_balance"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toEndOf="@id/totalIncomeLabel"
+        app:layout_constraintTop_toBottomOf="@id/monthRecyclerView" />
+
+    <TextView
+        android:id="@+id/remainingBalanceTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@id/remainingBalanceLabel"
+        app:layout_constraintTop_toBottomOf="@id/remainingBalanceLabel" />
+    <!-- Income and Expense input fields -->
+
+    <EditText
+        android:id="@+id/savingsEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:autofillHints="Savings"
+        android:background="@color/white"
+        android:hint="@string/enter_savings"
+        android:inputType="number"
+        android:maxWidth="488dp"
+        android:padding="16dp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/entertainmentExpenseEditText" />
+
+    <EditText
+        android:id="@+id/entertainmentExpenseEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:autofillHints="Entertainment Expense"
+        android:background="@color/white"
+        android:hint="@string/enter_entertainment_expense"
+        android:inputType="number"
+        android:maxWidth="488dp"
+        android:padding="16dp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gasExpenseEditText" />
+
+    <EditText
+        android:id="@+id/gasExpenseEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:autofillHints="Gas Expense"
+        android:background="@color/white"
+        android:hint="@string/enter_gas_expense"
+        android:inputType="number"
+        android:maxWidth="488dp"
+        android:padding="16dp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/foodExpenseEditText" />
+
+    <EditText
+        android:id="@+id/foodExpenseEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:autofillHints="Food Expense"
+        android:background="@color/white"
+        android:hint="@string/enter_food_expense"
+        android:inputType="number"
+        android:maxWidth="488dp"
+        android:padding="16dp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/incomeEditText" />
+
+    <EditText
+        android:id="@+id/incomeEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        android:autofillHints="Income Editor"
+        android:background="@color/white"
+        android:hint="@string/enter_income"
+        android:inputType="number"
+        android:maxWidth="488dp"
+        android:padding="16dp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/remainingBalanceLabel" />
+
+    <Button
+        android:id="@+id/selectDateButton"
+        android:layout_width="320dp"
+
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="152dp"
+        android:backgroundTint="@color/darker_gray"
+        android:maxWidth="320dp"
+        android:stateListAnimator="@null"
+        android:text="@string/select_date"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="104dp"
+        android:backgroundTint="#0A580A"
+        android:maxWidth="320dp"
+        android:stateListAnimator="@null"
+        android:text="@string/save"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/total_income"
-                android:maxWidth="488dp"
-                android:textColor="@color/black"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/totalIncomeTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:maxWidth="488dp"
-                android:gravity="center_horizontal"
-                android:textColor="@color/black"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxWidth="488dp"
-                android:text="@string/remaining_balance"
-                android:textColor="@color/black"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/remainingBalanceTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:gravity="center_horizontal"
-                android:textColor="@color/white"
-                android:maxWidth="488dp"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-            <!-- Income and Expense input fields -->
-            <EditText
-                android:id="@+id/incomeEditText"
-                android:layout_width="480dp"
-                android:maxWidth="488dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:autofillHints="Income Editor"
-                android:background="@color/white"
-                android:hint="@string/enter_income"
-                android:inputType="number"
-                android:padding="16dp"
-                android:textColor="@color/black" />
-
-            <EditText
-                android:id="@+id/foodExpenseEditText"
-                android:layout_width="480dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:maxWidth="488dp"
-                android:autofillHints="Food Expense"
-                android:background="@color/white"
-                android:hint="@string/enter_food_expense"
-                android:inputType="number"
-                android:padding="16dp"
-                android:textColor="@color/black" />
-
-            <EditText
-                android:id="@+id/gasExpenseEditText"
-                android:layout_width="480dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:maxWidth="488dp"
-                android:autofillHints="Gas Expense"
-                android:background="@color/white"
-                android:hint="@string/enter_gas_expense"
-                android:inputType="number"
-                android:padding="16dp"
-                android:textColor="@color/black" />
-
-            <EditText
-                android:id="@+id/entertainmentExpenseEditText"
-                android:layout_width="480dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:maxWidth="488dp"
-                android:autofillHints="Entertainment Expense"
-                android:background="@color/white"
-                android:hint="@string/enter_entertainment_expense"
-                android:inputType="number"
-                android:padding="16dp"
-                android:textColor="@color/black" />
-
-            <EditText
-                android:id="@+id/savingsEditText"
-                android:layout_width="480dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:autofillHints="Savings"
-                android:background="@color/white"
-                android:hint="@string/enter_savings"
-                android:inputType="number"
-                android:padding="16dp"
-                android:maxWidth="488dp"
-                android:textColor="@color/black" />
-
-            <Spinner
-                android:id="@+id/periodSpinner"
-                android:layout_width="480dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:background="@color/white"
-                android:entries="@array/period_options"
-                android:minHeight="48dp"
-                android:prompt="@string/period_prompt" />
-
-
-            <Button
-                android:id="@+id/saveButton"
-                android:layout_width="320dp"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/black"
-                android:maxWidth="320dp"
-                android:stateListAnimator="@null"
-                android:text="@string/save"
-                android:layout_gravity="center"
-                android:textColor="@color/white" />
-
-        </LinearLayout>
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

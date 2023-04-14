@@ -1,7 +1,7 @@
 package com.nobos.moneymap.models
 
 // Budget.kt
-data class budget(
+data class Budget(
     val userId: String = "",
     val income: Int = 0,
     val foodExpense: Int = 0,
@@ -9,5 +9,11 @@ data class budget(
     val entertainmentExpense: Int = 0,
     val savings: Int = 0,
     val periodType: String = "weekly", // weekly, monthly, or yearly
-    val timestamp: Long = System.currentTimeMillis() // Timestamp when the data was added
+    val day: Int = 1,
+    val month: Int = 0,
+    val year: Int = 0,
+    val timestamp: Long = System.currentTimeMillis()
 )
+
+
+

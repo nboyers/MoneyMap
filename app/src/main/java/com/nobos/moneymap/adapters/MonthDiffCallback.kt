@@ -1,10 +1,13 @@
 package com.nobos.moneymap.adapters
-import androidx.recyclerview.widget.DiffUtil
-import com.nobos.moneymap.models.budget
 
-class DailyExpenseDiffCallback(
-    private val oldList: List<budget>,
-    private val newList: List<budget>
+import androidx.recyclerview.widget.DiffUtil
+import com.nobos.moneymap.models.Budget
+import java.time.Month
+
+
+class MonthDiffCallback(
+    private val oldList: List<Budget>,
+    private val newList: List<Budget>
 ) : DiffUtil.Callback() {
 
     override fun getOldListSize(): Int = oldList.size
