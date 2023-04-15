@@ -1,30 +1,27 @@
 package com.nobos.moneymap.fragments
 
+
 import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.nobos.moneymap.R
+import com.nobos.moneymap.adapters.MonthAdapter
 import com.nobos.moneymap.firebase.LoginActivity
 import com.nobos.moneymap.models.Budget
 import com.nobos.moneymap.viewModels.SummaryViewModel
@@ -44,9 +41,19 @@ class SummaryFragment : Fragment() {
     private lateinit var gasExpenseEditText: EditText
     private lateinit var entertainmentExpenseEditText: EditText
     private lateinit var savingsEditText: EditText
-    private lateinit var periodSpinner: Spinner
     private lateinit var database: FirebaseDatabase
     private lateinit var summaryViewModel: SummaryViewModel
+    private lateinit var selectDateButton: Button
+
+    // Date picker for the Data Snapshots
+    private var selectedDay: Int = 1
+    private var selectedMonth: Int = 0
+    private var selectedYear: Int = 0
+    companion object {
+        fun newInstance(): SummaryFragment {
+            return SummaryFragment()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,32 +71,29 @@ class SummaryFragment : Fragment() {
         database = FirebaseDatabase.getInstance()
 
 
-        val monthContainer: RecyclerView = view.findViewById(R.id.monthRecyclerView)
-
-        // Set a horizontal LinearLayoutManager for the monthContainer
-        val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        monthContainer.layoutManager = layoutManager
-
-        val userCalendar = Calendar.getInstance()
-        val currentYear = userCalendar.get(Calendar.YEAR)
-
-
         val monthAbbreviations = arrayOf(
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         )
 
         // Initialize the monthlyExpenseAdapter
-        val monthsContainer: LinearLayout = view.findViewById(R.id.monthsContainer)
+        val monthsRecyclerView: RecyclerView = view.findViewById(R.id.monthsRecyclerView)
+        // Initialize the monthlyExpenseAdapter
+        val monthAdapter = MonthAdapter(monthAbbreviations) { monthNumber, currentYear ->
+            // Create a new instance of ChartsFragment with the selected month and current year
+            val chartsFragment = ChartsFragment.newInstance(monthNumber, currentYear)
 
-        for (month in monthAbbreviations) {
-            val monthView = createMonthView(month)
-
-            monthView.setOnClickListener {
-                //TODO: Handle month view click event
-            }
-            monthsContainer.addView(monthView)
+            // Replace the current fragment with the new instance of ChartsFragment
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.viewPager, chartsFragment)
+                .addToBackStack(null)
+                .commit()
         }
+
+
+
+        monthsRecyclerView.adapter = monthAdapter
+
 
 
 
@@ -103,22 +107,23 @@ class SummaryFragment : Fragment() {
         gasExpenseEditText = view.findViewById(R.id.gasExpenseEditText)
         entertainmentExpenseEditText = view.findViewById(R.id.entertainmentExpenseEditText)
         savingsEditText = view.findViewById(R.id.savingsEditText)
-        val selectDateButton: Button = view.findViewById(R.id.selectDateButton)
+        selectDateButton = view.findViewById(R.id.selectDateButton)
+
         selectDateButton.setOnClickListener {
             showDatePickerDialog()
         }
 
 
-        val userId = mAuth.currentUser?.uid ?: ""
+        mAuth.currentUser?.uid ?: ""
         val calendar = Calendar.getInstance()
-        val monthStart = calendar.apply {
+        calendar.apply {
             set(Calendar.DAY_OF_MONTH, 1)
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
-        val monthEnd = calendar.apply {
+        calendar.apply {
             add(Calendar.MONTH, 1)
             add(Calendar.DAY_OF_MONTH, -1)
         }.timeInMillis
@@ -133,13 +138,11 @@ class SummaryFragment : Fragment() {
         }
 
         saveButton.setOnClickListener {
-            val income = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
-            val foodExpense = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val gasExpense = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val entertainmentExpense =
-                entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val savings = savingsEditText.text.toString().toIntOrNull() ?: 0
-            val periodType = periodSpinner.selectedItem.toString()
+            val income               = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
+            val foodExpense          = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val gasExpense           = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val entertainmentExpense = entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val savings              = savingsEditText.text.toString().toIntOrNull() ?: 0
 
             // Create a new budget object
             val budget = Budget(
@@ -149,7 +152,9 @@ class SummaryFragment : Fragment() {
                 gasExpense = gasExpense,
                 entertainmentExpense = entertainmentExpense,
                 savings = savings,
-                periodType = periodType,
+                day = selectedDay,
+                month = selectedMonth,
+                year = selectedYear,
                 timestamp = System.currentTimeMillis()
             )
 
@@ -193,9 +198,9 @@ class SummaryFragment : Fragment() {
             .setView(datePickerDialog)
             .setPositiveButton("OK") { _, _ ->
                 // Retrieve the selected date values
-                val day = datePicker.dayOfMonth
-                val month = datePicker.month
-                val year = datePicker.year
+                selectedDay = datePicker.dayOfMonth
+                selectedMonth = datePicker.month
+                selectedYear = datePicker.year
 
                 // Use the selected date values according to your app's requirements
             }
@@ -203,22 +208,6 @@ class SummaryFragment : Fragment() {
             .create()
 
         alertDialog.show()
-    }
-
-    private fun createMonthView(monthText: String): TextView {
-        val monthView = TextView(requireContext())
-        val layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        )
-        layoutParams.setMargins(8, 8, 8, 8)
-        monthView.layoutParams = layoutParams
-        monthView.gravity = Gravity.CENTER
-        monthView.text = monthText
-        monthView.setTextColor(Color.WHITE)
-        monthView.setBackgroundResource(R.drawable.square_month_background) // You'll need to create this background
-        monthView.setPadding(16, 16, 16, 16)
-        return monthView
     }
 
 

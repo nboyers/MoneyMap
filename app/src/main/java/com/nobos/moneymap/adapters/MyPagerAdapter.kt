@@ -1,18 +1,29 @@
 package com.nobos.moneymap.adapters
 
-
-import ChartsFragment
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.nobos.moneymap.fragments.ChartsFragment
 import com.nobos.moneymap.fragments.SummaryFragment
 
-class MyPagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
-    override fun getItemCount(): Int = 2
+class MyPagerAdapter(activity: AppCompatActivity) : FragmentStateAdapter(activity) {
 
-    override fun createFragment(position: Int): Fragment = when (position) {
-        0 -> SummaryFragment()
-        1 -> ChartsFragment()
-        else -> throw IllegalArgumentException("Invalid position")
+    private var fragments = listOf(
+        SummaryFragment.newInstance(),
+        ChartsFragment.newInstance()
+    )
+
+    fun replaceChartsFragment(newFragment: Fragment) {
+        fragments = fragments.toMutableList().apply {
+            set(1, newFragment)
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return fragments.size
+    }
+
+    override fun createFragment(position: Int): Fragment {
+        return fragments[position]
     }
 }

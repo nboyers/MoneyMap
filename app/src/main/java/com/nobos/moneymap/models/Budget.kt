@@ -8,7 +8,6 @@ data class Budget(
     val gasExpense: Int = 0,
     val entertainmentExpense: Int = 0,
     val savings: Int = 0,
-    val periodType: String = "weekly", // weekly, monthly, or yearly
     val day: Int = 1,
     val month: Int = 0,
     val year: Int = 0,

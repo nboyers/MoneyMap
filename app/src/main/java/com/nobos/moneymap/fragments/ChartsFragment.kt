@@ -1,12 +1,13 @@
+package com.nobos.moneymap.fragments
+
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.utils.ColorTemplate
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -14,7 +15,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.nobos.moneymap.R
 import com.nobos.moneymap.models.Budget
-import java.util.*
+import java.util.Calendar
 
 
 class ChartsFragment : Fragment() {
@@ -24,15 +25,14 @@ class ChartsFragment : Fragment() {
     companion object {
         private const val ARG_SELECTED_MONTH = "selected_month"
         private const val ARG_SELECTED_YEAR = "selected_year"
-
-        @JvmStatic
-        fun newInstance(selectedMonth: Int, selectedYear: Int) =
-            ChartsFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_SELECTED_MONTH, selectedMonth)
-                    putInt(ARG_SELECTED_YEAR, selectedYear)
-                }
-            }
+        fun newInstance(selectedMonth: Int = 1, selectedYear: Int = Calendar.getInstance().get(Calendar.YEAR)): ChartsFragment {
+            val fragment = ChartsFragment()
+            val args = Bundle()
+            args.putInt(ARG_SELECTED_MONTH, selectedMonth)
+            args.putInt(ARG_SELECTED_YEAR, selectedYear)
+            fragment.arguments = args
+            return fragment
+        }
     }
 
 
@@ -46,18 +46,16 @@ class ChartsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Get the chart views from the layout
-        val barChart: BarChart = view.findViewById(R.id.barChart)
-        val lineChart: LineChart = view.findViewById(R.id.lineChart)
         val pieChart: PieChart = view.findViewById(R.id.pieChart)
 
         // Retrieve the selected month and year from the arguments bundle
-        val selectedMonth = arguments?.getInt(ARG_SELECTED_MONTH) ?: 1
-        val selectedYear = arguments?.getInt(ARG_SELECTED_YEAR) ?: 2022
+        val selectedMonth = arguments?.getInt(ARG_SELECTED_MONTH) ?: Calendar.getInstance().get(Calendar.MONTH)
+        val selectedYear = arguments?.getInt(ARG_SELECTED_YEAR) ?: Calendar.getInstance().get(Calendar.YEAR)
+
 
         // Fetch data for the selected month and year
         fetchUserData { budgets ->
             val selectedMonthBudget = budgets
-                .filter { budget -> budget.periodType == "monthly" }
                 .filter { budget -> budget.month == selectedMonth && budget.year == selectedYear }
 
             // Aggregate the data for the selected month and year
@@ -68,8 +66,6 @@ class ChartsFragment : Fragment() {
             val totalSavings = selectedMonthBudget.sumOf { it.savings }
 
             // Set up and populate the charts with the data
-            setupBarChart(barChart, totalIncome, totalFoodExpense, totalGasExpense, totalEntertainmentExpense, totalSavings)
-            setupLineChart(lineChart, totalIncome, totalFoodExpense, totalGasExpense, totalEntertainmentExpense, totalSavings)
             setupPieChart(pieChart, totalIncome, totalFoodExpense, totalGasExpense, totalEntertainmentExpense, totalSavings)
         }
     }
@@ -81,7 +77,7 @@ class ChartsFragment : Fragment() {
         currentUser?.let { user ->
             val userId = user.uid
 
-            db.reference.child("budgets").child(userId)
+            db.reference.child("Budgets").child(userId)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         val budgets =
@@ -95,79 +91,6 @@ class ChartsFragment : Fragment() {
                     }
                 })
         }
-    }
-
-    private fun setupBarChart(
-        barChart: BarChart,
-        income: Int,
-        foodExpense: Int,
-        gasExpense: Int,
-        entertainmentExpense: Int,
-        savings: Int
-    ) {
-        // Prepare the data
-        val barEntries = ArrayList<BarEntry>()
-        barEntries.add(BarEntry(0f, income.toFloat()))
-        barEntries.add(BarEntry(1f, foodExpense.toFloat()))
-        barEntries.add(BarEntry(2f, gasExpense.toFloat()))
-        barEntries.add(BarEntry(3f, entertainmentExpense.toFloat()))
-        barEntries.add(BarEntry(4f, savings.toFloat()))
-
-        // Create a BarDataSet and set colors
-        val barDataSet = BarDataSet(barEntries, "Expenses")
-        barDataSet.colors = ColorTemplate.MATERIAL_COLORS.toList()
-
-        // Create a BarData object and set it to the chart
-        val barData = BarData(barDataSet)
-        barChart.data = barData
-
-        // Customize the chart
-        barChart.setDrawValueAboveBar(true)
-        barChart.description.isEnabled = false
-        barChart.xAxis.isEnabled = false
-        barChart.axisRight.isEnabled = false
-        barChart.axisLeft.setDrawGridLines(false)
-        barChart.animateY(1000)
-
-        // Refresh the chart
-        barChart.invalidate()
-    }
-
-
-    private fun setupLineChart(
-        lineChart: LineChart,
-        income: Int,
-        foodExpense: Int,
-        gasExpense: Int,
-        entertainmentExpense: Int,
-        savings: Int
-    ) {
-        // Prepare the data
-        val lineEntries = ArrayList<Entry>()
-        lineEntries.add(Entry(0f, income.toFloat()))
-        lineEntries.add(Entry(1f, foodExpense.toFloat()))
-        lineEntries.add(Entry(2f, gasExpense.toFloat()))
-        lineEntries.add(Entry(3f, entertainmentExpense.toFloat()))
-        lineEntries.add(Entry(4f, savings.toFloat()))
-
-        // Create a LineDataSet and set colors
-        val lineDataSet = LineDataSet(lineEntries, "Expenses")
-        lineDataSet.lineWidth = 2.5f
-        lineDataSet.setCircleColor(ContextCompat.getColor(requireContext(), R.color.teal_700))
-
-        // Create a LineData object and set it to the chart
-        val lineData = LineData(lineDataSet)
-        lineChart.data = lineData
-
-        // Customize the chart
-        lineChart.description.isEnabled = false
-        lineChart.xAxis.isEnabled = false
-        lineChart.axisRight.isEnabled = false
-        lineChart.axisLeft.setDrawGridLines(false)
-        lineChart.animateY(1000)
-
-        // Refresh the chart
-        lineChart.invalidate()
     }
 
     private fun setupPieChart(
