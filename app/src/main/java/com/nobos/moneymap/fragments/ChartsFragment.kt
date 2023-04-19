@@ -1,7 +1,10 @@
 package com.nobos.moneymap.fragments
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.github.mikephil.charting.charts.PieChart
@@ -54,7 +57,7 @@ class ChartsFragment : Fragment() {
 
 
         // Fetch data for the selected month and year
-        fetchUserData { budgets ->
+        fetchUserData({ budgets ->
             val selectedMonthBudget = budgets
                 .filter { budget -> budget.month == selectedMonth && budget.year == selectedYear }
 
@@ -67,11 +70,15 @@ class ChartsFragment : Fragment() {
 
             // Set up and populate the charts with the data
             setupPieChart(pieChart, totalIncome, totalFoodExpense, totalGasExpense, totalEntertainmentExpense, totalSavings)
-        }
+        }, {
+            Toast.makeText(requireContext(), "Failed to fetch user data", Toast.LENGTH_SHORT).show()
+        })
+
+
+
     }
 
-
-    private fun fetchUserData(onSuccess: (List<Budget>) -> Unit) {
+    private fun fetchUserData(onSuccess: (List<Budget>) -> Unit, onFailure: () -> Unit) {
         val currentUser = auth.currentUser
 
         currentUser?.let { user ->
@@ -87,10 +94,15 @@ class ChartsFragment : Fragment() {
 
                     override fun onCancelled(error: DatabaseError) {
                         // Handle failure
-                        error.toException().printStackTrace()
+                        onFailure()
                     }
                 })
         }
+    }
+
+
+    fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View? {
+        return inflater.inflate(R.layout.fragment_charts, container, false)
     }
 
     private fun setupPieChart(

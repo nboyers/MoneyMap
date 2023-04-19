@@ -14,6 +14,22 @@
 
         <TextView
             android:textColor="@color/black"
+            android:id="@+id/pieChartTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pie_chart"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pieChart"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="8dp" />
+        <!--
+        <TextView
+            android:textColor="@color/black"
             android:id="@+id/lineChartTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -44,22 +60,7 @@
             android:layout_height="200dp"
             android:layout_marginTop="8dp" />
 
-        <TextView
-            android:textColor="@color/black"
-            android:id="@+id/pieChartTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/pie_chart"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
-
-        <com.github.mikephil.charting.charts.PieChart
-            android:id="@+id/pieChart"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp" />
-
+-->
     </LinearLayout>
 
 </ScrollView>

@@ -1,6 +1,5 @@
 package com.nobos.moneymap.fragments
 
-
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -18,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.nobos.moneymap.R
@@ -44,16 +44,13 @@ class SummaryFragment : Fragment() {
     private lateinit var database: FirebaseDatabase
     private lateinit var summaryViewModel: SummaryViewModel
     private lateinit var selectDateButton: Button
+    private var isDialogOpen = false
 
     // Date picker for the Data Snapshots
     private var selectedDay: Int = 1
     private var selectedMonth: Int = 0
     private var selectedYear: Int = 0
-    companion object {
-        fun newInstance(): SummaryFragment {
-            return SummaryFragment()
-        }
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,30 +67,43 @@ class SummaryFragment : Fragment() {
         mAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
-
         val monthAbbreviations = arrayOf(
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         )
 
-        // Initialize the monthlyExpenseAdapter
-        val monthsRecyclerView: RecyclerView = view.findViewById(R.id.monthsRecyclerView)
-        // Initialize the monthlyExpenseAdapter
         val monthAdapter = MonthAdapter(monthAbbreviations) { monthNumber, currentYear ->
-            // Create a new instance of ChartsFragment with the selected month and current year
-            val chartsFragment = ChartsFragment.newInstance(monthNumber, currentYear)
+            // Check if a BottomSheetDialog is already open
+            if (!isDialogOpen) {
+                // Set the flag to true to prevent other BottomSheetDialogs from opening
+                isDialogOpen = true
 
-            // Replace the current fragment with the new instance of ChartsFragment
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.viewPager, chartsFragment)
-                .addToBackStack(null)
-                .commit()
+                // Create a new instance of ChartsFragment with the selected month and current year
+                val chartsFragment = ChartsFragment.newInstance(monthNumber, currentYear)
+
+                // Inflate the ChartsFragment view without attaching it to the container
+                val chartsView = chartsFragment.inflateView(layoutInflater, view as ViewGroup?)
+
+                // Create and show the BottomSheetDialog with the chartsView
+                val bottomSheetDialog = BottomSheetDialog(requireContext())
+                if (chartsView != null) {
+                    bottomSheetDialog.setContentView(chartsView)
+                } else {
+                    Toast.makeText(requireContext(), "No data to present", Toast.LENGTH_SHORT).show()
+                }
+
+                // Set an OnDismissListener to the BottomSheetDialog to set the flag back to false
+                bottomSheetDialog.setOnDismissListener {
+                    isDialogOpen = false
+                }
+
+                bottomSheetDialog.show()
+            }
         }
 
-
-
-        monthsRecyclerView.adapter = monthAdapter
-
+        // Initialize the RecyclerView and set its adapter
+        val monthRecyclerView: RecyclerView = view.findViewById(R.id.monthsRecyclerView)
+        monthRecyclerView.adapter = monthAdapter
 
 
 
@@ -138,11 +148,12 @@ class SummaryFragment : Fragment() {
         }
 
         saveButton.setOnClickListener {
-            val income               = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
-            val foodExpense          = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val gasExpense           = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val entertainmentExpense = entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val savings              = savingsEditText.text.toString().toIntOrNull() ?: 0
+            val income = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
+            val foodExpense = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val gasExpense = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val entertainmentExpense =
+                entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val savings = savingsEditText.text.toString().toIntOrNull() ?: 0
 
             // Create a new budget object
             val budget = Budget(
@@ -189,6 +200,8 @@ class SummaryFragment : Fragment() {
 
     }
 
+
+
     private fun showDatePickerDialog() {
         val datePickerDialog =
             LayoutInflater.from(requireContext()).inflate(R.layout.date_picker_dialog, null)
@@ -208,6 +221,17 @@ class SummaryFragment : Fragment() {
             .create()
 
         alertDialog.show()
+    }
+
+    fun showChartsForMonth(month: Int, year: Int) {
+        val chartsFragment = ChartsFragment.newInstance(month, year)
+        val chartsView = chartsFragment.inflateView(layoutInflater, view as ViewGroup?)
+
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        if (chartsView != null) {
+            bottomSheetDialog.setContentView(chartsView)
+        }
+        bottomSheetDialog.show()
     }
 
 
