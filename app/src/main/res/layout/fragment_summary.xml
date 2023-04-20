@@ -91,7 +91,7 @@
         android:id="@+id/foodExpenseEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:autofillHints="Food Expense"
         android:background="@color/white"
         android:hint="@string/enter_food_expense"
@@ -197,7 +197,6 @@
         android:backgroundTint="@color/darker_gray"
         android:maxWidth="320dp"
         android:stateListAnimator="@null"
-
         android:text="@string/select_date"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -208,8 +207,12 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <FrameLayout
-        android:id="@+id/chartsFragmentContainer"
+        android:id="@+id/bottomSheetContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:background="@android:color/transparent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

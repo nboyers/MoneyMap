@@ -2,6 +2,7 @@ package com.nobos.moneymap.fragments
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,12 +12,14 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -30,7 +33,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-
 
 class SummaryFragment : Fragment() {
 
@@ -50,7 +52,6 @@ class SummaryFragment : Fragment() {
     private var selectedDay: Int = 1
     private var selectedMonth: Int = 0
     private var selectedYear: Int = 0
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -81,15 +82,23 @@ class SummaryFragment : Fragment() {
                 // Create a new instance of ChartsFragment with the selected month and current year
                 val chartsFragment = ChartsFragment.newInstance(monthNumber, currentYear)
 
-                // Inflate the ChartsFragment view without attaching it to the container
-                val chartsView = chartsFragment.inflateView(layoutInflater, view as ViewGroup?)
+                // Create and show the BottomSheetDialog with the chartsFragment
+                val bottomSheetDialog =
+                    BottomSheetDialog(requireContext(), R.style.AppTheme_BottomSheetDialog)
 
-                // Create and show the BottomSheetDialog with the chartsView
-                val bottomSheetDialog = BottomSheetDialog(requireContext())
-                if (chartsView != null) {
-                    bottomSheetDialog.setContentView(chartsView)
+                // Add the ChartsFragment to the BottomSheetDialog
+                bottomSheetDialog.setContentView(R.layout.fragment_charts)
+                val containerView =
+                    bottomSheetDialog.findViewById<FrameLayout>(R.id.bottomSheetContainer)
+
+                if (containerView != null) {
+                    containerView.setBackgroundColor(Color.TRANSPARENT)
+                    childFragmentManager.beginTransaction()
+                        .replace(R.id.bottomSheetContainer, chartsFragment)
+                        .commit()
                 } else {
-                    Toast.makeText(requireContext(), "No data to present", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "No data to present", Toast.LENGTH_SHORT)
+                        .show()
                 }
 
                 // Set an OnDismissListener to the BottomSheetDialog to set the flag back to false
@@ -101,11 +110,10 @@ class SummaryFragment : Fragment() {
             }
         }
 
+
         // Initialize the RecyclerView and set its adapter
         val monthRecyclerView: RecyclerView = view.findViewById(R.id.monthsRecyclerView)
         monthRecyclerView.adapter = monthAdapter
-
-
 
 
         // Retrieve the views from the fragment view
@@ -201,7 +209,6 @@ class SummaryFragment : Fragment() {
     }
 
 
-
     private fun showDatePickerDialog() {
         val datePickerDialog =
             LayoutInflater.from(requireContext()).inflate(R.layout.date_picker_dialog, null)
@@ -221,17 +228,6 @@ class SummaryFragment : Fragment() {
             .create()
 
         alertDialog.show()
-    }
-
-    fun showChartsForMonth(month: Int, year: Int) {
-        val chartsFragment = ChartsFragment.newInstance(month, year)
-        val chartsView = chartsFragment.inflateView(layoutInflater, view as ViewGroup?)
-
-        val bottomSheetDialog = BottomSheetDialog(requireContext())
-        if (chartsView != null) {
-            bottomSheetDialog.setContentView(chartsView)
-        }
-        bottomSheetDialog.show()
     }
 
 
@@ -262,4 +258,41 @@ class SummaryFragment : Fragment() {
             totalIncomeTextView.text = income.toString()
         }
     }
+    // Add this function in SummaryFragment class
+    fun showChartsForMonth(month: Int, year: Int) {
+        val chartsFragment = ChartsFragment.newInstance(month, year)
+
+        val chartsFragmentContainer = view?.findViewById<FrameLayout>(R.id.bottomSheetContainer)
+
+        if (chartsFragmentContainer != null) {
+            chartsFragmentContainer.setBackgroundColor(Color.TRANSPARENT)
+            chartsFragmentContainer.visibility = View.VISIBLE
+
+            val behavior = BottomSheetBehavior.from(chartsFragmentContainer)
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+
+            behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                        childFragmentManager.beginTransaction()
+                            .remove(chartsFragment)
+                            .commit()
+                        chartsFragmentContainer.visibility = View.GONE
+                    }
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+            })
+
+            chartsFragmentContainer.setBackgroundColor(Color.TRANSPARENT)
+            childFragmentManager.beginTransaction()
+
+                .replace(R.id.bottomSheetContainer, chartsFragment)
+                .commit()
+        } else {
+            Toast.makeText(requireContext(), "No data to present", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
 }

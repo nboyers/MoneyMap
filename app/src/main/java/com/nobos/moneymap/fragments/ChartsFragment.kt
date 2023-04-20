@@ -20,6 +20,7 @@ import com.nobos.moneymap.R
 import com.nobos.moneymap.models.Budget
 import java.util.Calendar
 
+import android.util.Log
 
 class ChartsFragment : Fragment() {
 
@@ -41,19 +42,26 @@ class ChartsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("ChartsFragment", "PieEntries:")
+
         auth = FirebaseAuth.getInstance()
         db = FirebaseDatabase.getInstance()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ) : View? {
+        val view = inflater.inflate(R.layout.fragment_charts, container, false)
+        Log.d("ChartsFragment", "onViewCreated")
         // Get the chart views from the layout
         val pieChart: PieChart = view.findViewById(R.id.pieChart)
 
         // Retrieve the selected month and year from the arguments bundle
-        val selectedMonth = arguments?.getInt(ARG_SELECTED_MONTH) ?: Calendar.getInstance().get(Calendar.MONTH)
-        val selectedYear = arguments?.getInt(ARG_SELECTED_YEAR) ?: Calendar.getInstance().get(Calendar.YEAR)
+        val selectedMonth = arguments?.getInt("selectedMonth") ?: 0
+        val selectedYear = arguments?.getInt("selectedYear") ?: 0
+
+// Fetch the data and populate the PieChart using the selectedMonth and selectedYear
 
 
         // Fetch data for the selected month and year
@@ -74,12 +82,13 @@ class ChartsFragment : Fragment() {
             Toast.makeText(requireContext(), "Failed to fetch user data", Toast.LENGTH_SHORT).show()
         })
 
-
+       return view
 
     }
 
     private fun fetchUserData(onSuccess: (List<Budget>) -> Unit, onFailure: () -> Unit) {
         val currentUser = auth.currentUser
+        Log.d("ChartsFragment","Fetched User Data")
 
         currentUser?.let { user ->
             val userId = user.uid
@@ -87,13 +96,18 @@ class ChartsFragment : Fragment() {
             db.reference.child("Budgets").child(userId)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
+                        Log.d("ChartsFragment", "onDataChange")
                         val budgets =
-                            snapshot.children.mapNotNull { it.getValue(Budget::class.java) }
+                            snapshot.children.mapNotNull { it.getValue(Budget::class.java)
+
+                            }
+                        Log.d("ChartsFragment", "Budgets: $budgets")
                         onSuccess(budgets)
                     }
 
                     override fun onCancelled(error: DatabaseError) {
                         // Handle failure
+                        Log.d("ChartsFragment", "onCancelled: ${error.message}")
                         onFailure()
                     }
                 })
@@ -101,9 +115,6 @@ class ChartsFragment : Fragment() {
     }
 
 
-    fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View? {
-        return inflater.inflate(R.layout.fragment_charts, container, false)
-    }
 
     private fun setupPieChart(
         pieChart: PieChart,
@@ -115,6 +126,7 @@ class ChartsFragment : Fragment() {
     ) {
         // Prepare the data
         val pieEntries = ArrayList<PieEntry>()
+     //   Log.d("ChartsFragment", "PieEntries: $pieEntries")
         pieEntries.add(PieEntry(income.toFloat(), "Income"))
         pieEntries.add(PieEntry(foodExpense.toFloat(), "Food Expense"))
         pieEntries.add(PieEntry(gasExpense.toFloat(), "Gas Expense"))

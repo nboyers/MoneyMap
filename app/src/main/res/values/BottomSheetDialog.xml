@@ -1,0 +1,15 @@
+<!-- styles.xml or themes.xml -->
+<resources>
+    <!-- Other styles ... -->
+
+    <!-- Custom BottomSheetDialog theme -->
+    <style name="AppTheme.BottomSheetDialog" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+
+        <!-- Customize the text colors -->
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textColorSecondary">@color/posGreen</item>
+
+        <!-- Customize other attributes as needed -->
+        <!-- ... -->
+    </style>
+</resources>

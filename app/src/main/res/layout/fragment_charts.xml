@@ -1,24 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottomSheetContainer"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    app:behavior_peekHeight="250dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior" >
 
     <LinearLayout
-        android:background="@color/primaryBlue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="@color/primaryBlue"
         android:padding="16dp">
 
         <TextView
             android:textColor="@color/black"
             android:id="@+id/pieChartTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/pie_chart"
             android:textSize="18sp"
+            android:padding="16dp"
             android:textStyle="bold"
             android:layout_marginTop="16dp" />
 
@@ -27,40 +32,41 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_marginTop="8dp" />
-        <!--
-        <TextView
-            android:textColor="@color/black"
-            android:id="@+id/lineChartTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/line_chart"
-            android:textSize="18sp"
-            android:textStyle="bold" />
 
-        <com.github.mikephil.charting.charts.LineChart
-            android:textColor="@color/black"
-            android:id="@+id/lineChart"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp" />
+    </LinearLayout>
+</FrameLayout>
 
-        <TextView
-            android:id="@+id/barChartTitle"
-            android:textColor="@color/black"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/bar_chart"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
+    <!--
+    <TextView
+        android:textColor="@color/black"
+        android:id="@+id/lineChartTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/line_chart"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/barChart"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp" />
+    <com.github.mikephil.charting.charts.LineChart
+        android:textColor="@color/black"
+        android:id="@+id/lineChart"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/barChartTitle"
+        android:textColor="@color/black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/bar_chart"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp" />
+
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/barChart"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="8dp" />
 
 -->
-    </LinearLayout>
-
-</ScrollView>
