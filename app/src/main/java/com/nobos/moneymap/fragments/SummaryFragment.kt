@@ -80,7 +80,7 @@ class SummaryFragment : Fragment() {
                 isDialogOpen = true
 
                 // Create a new instance of ChartsFragment with the selected month and current year
-                val chartsFragment = ChartsFragment.newInstance(monthNumber, currentYear)
+                val chartsFragment = ChartsFragment.newInstance(monthNumber.toLong(), currentYear.toLong())
 
                 // Create and show the BottomSheetDialog with the chartsFragment
                 val bottomSheetDialog =
@@ -156,25 +156,24 @@ class SummaryFragment : Fragment() {
         }
 
         saveButton.setOnClickListener {
-            val income = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
-            val foodExpense = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val gasExpense = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val income = totalIncomeEditText.text.toString().toLongOrNull() ?: 0.0
+            val foodExpense = foodExpenseEditText.text.toString().toLongOrNull() ?: 0
+            val gasExpense = gasExpenseEditText.text.toString().toLongOrNull() ?: 0
             val entertainmentExpense =
-                entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val savings = savingsEditText.text.toString().toIntOrNull() ?: 0
+                entertainmentExpenseEditText.text.toString().toLongOrNull() ?: 0
+            val savings = savingsEditText.text.toString().toLongOrNull() ?: 0
 
             // Create a new budget object
             val budget = Budget(
                 userId = mAuth.currentUser?.uid ?: "",
-                income = income,
+                income = income as Long,
                 foodExpense = foodExpense,
                 gasExpense = gasExpense,
                 entertainmentExpense = entertainmentExpense,
                 savings = savings,
-                day = selectedDay,
-                month = selectedMonth,
-                year = selectedYear,
-                timestamp = System.currentTimeMillis()
+                day = selectedDay.toLong(),
+                month = selectedMonth.toLong(),
+                year = selectedYear.toLong(),
             )
 
             // Save the budget using the ViewModel
@@ -260,7 +259,7 @@ class SummaryFragment : Fragment() {
     }
     // Add this function in SummaryFragment class
     fun showChartsForMonth(month: Int, year: Int) {
-        val chartsFragment = ChartsFragment.newInstance(month, year)
+        val chartsFragment = ChartsFragment.newInstance(month.toLong(), year.toLong())
 
         val chartsFragmentContainer = view?.findViewById<FrameLayout>(R.id.bottomSheetContainer)
 

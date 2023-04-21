@@ -26,14 +26,17 @@ class ChartsFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseDatabase
+    private lateinit var pieChart: PieChart
+
     companion object {
         private const val ARG_SELECTED_MONTH = "selected_month"
         private const val ARG_SELECTED_YEAR = "selected_year"
-        fun newInstance(selectedMonth: Int = 1, selectedYear: Int = Calendar.getInstance().get(Calendar.YEAR)): ChartsFragment {
+        fun newInstance(selectedMonth: Long = 1, selectedYear: Long = Calendar.getInstance().get(Calendar.YEAR)
+            .toLong()): ChartsFragment {
             val fragment = ChartsFragment()
             val args = Bundle()
-            args.putInt(ARG_SELECTED_MONTH, selectedMonth)
-            args.putInt(ARG_SELECTED_YEAR, selectedYear)
+            args.putInt(ARG_SELECTED_MONTH, selectedMonth.toInt())
+            args.putInt(ARG_SELECTED_YEAR, selectedYear.toInt())
             fragment.arguments = args
             return fragment
         }
@@ -58,8 +61,8 @@ class ChartsFragment : Fragment() {
         val pieChart: PieChart = view.findViewById(R.id.pieChart)
 
         // Retrieve the selected month and year from the arguments bundle
-        val selectedMonth = arguments?.getInt("selectedMonth") ?: 0
-        val selectedYear = arguments?.getInt("selectedYear") ?: 0
+        val selectedMonth = arguments?.getInt(ARG_SELECTED_MONTH) ?: Calendar.getInstance().get(Calendar.MONTH)
+        val selectedYear = arguments?.getInt(ARG_SELECTED_YEAR) ?: Calendar.getInstance().get(Calendar.YEAR)
 
 // Fetch the data and populate the PieChart using the selectedMonth and selectedYear
 
@@ -67,7 +70,7 @@ class ChartsFragment : Fragment() {
         // Fetch data for the selected month and year
         fetchUserData({ budgets ->
             val selectedMonthBudget = budgets
-                .filter { budget -> budget.month == selectedMonth && budget.year == selectedYear }
+                .filter { budget -> budget.month == selectedMonth.toLong() && budget.year == selectedYear.toLong() }
 
             // Aggregate the data for the selected month and year
             val totalIncome = selectedMonthBudget.sumOf { it.income }
@@ -77,7 +80,12 @@ class ChartsFragment : Fragment() {
             val totalSavings = selectedMonthBudget.sumOf { it.savings }
 
             // Set up and populate the charts with the data
-            setupPieChart(pieChart, totalIncome, totalFoodExpense, totalGasExpense, totalEntertainmentExpense, totalSavings)
+            setupPieChart(pieChart,
+                totalIncome.toInt(),
+                totalFoodExpense.toInt(),
+                totalGasExpense.toInt(),
+                totalEntertainmentExpense.toInt(),
+                totalSavings.toInt())
         }, {
             Toast.makeText(requireContext(), "Failed to fetch user data", Toast.LENGTH_SHORT).show()
         })
@@ -88,31 +96,51 @@ class ChartsFragment : Fragment() {
 
     private fun fetchUserData(onSuccess: (List<Budget>) -> Unit, onFailure: () -> Unit) {
         val currentUser = auth.currentUser
-        Log.d("ChartsFragment","Fetched User Data")
 
         currentUser?.let { user ->
             val userId = user.uid
-
-            db.reference.child("Budgets").child(userId)
+//FIXME: Can't convert object of type java.lang.Long to type com.nobos.moneymap.models.Budget
+            db.reference.child("Budget").child(userId)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        Log.d("ChartsFragment", "onDataChange")
-                        val budgets =
-                            snapshot.children.mapNotNull { it.getValue(Budget::class.java)
+                        val budgets = snapshot.children.mapNotNull { it.getValue(Budget::class.java) }
+                        val selectedMonth = arguments?.getInt(ARG_SELECTED_MONTH) ?: Calendar.getInstance().get(Calendar.MONTH)
+                        val selectedYear = arguments?.getInt(ARG_SELECTED_YEAR) ?: Calendar.getInstance().get(Calendar.YEAR)
 
-                            }
-                        Log.d("ChartsFragment", "Budgets: $budgets")
+                        val selectedMonthBudget = budgets.filter {
+                            it.month == selectedMonth.toLong() && it.year == selectedYear.toLong()
+                        }
+
+                        // Aggregate the data for the selected month and year
+                        val totalIncome = selectedMonthBudget.sumOf { it.income }.toInt()
+                        val totalFoodExpense = selectedMonthBudget.sumOf { it.foodExpense }.toInt()
+                        val totalGasExpense = selectedMonthBudget.sumOf { it.gasExpense }.toInt()
+                        val totalEntertainmentExpense = selectedMonthBudget.sumOf { it.entertainmentExpense }.toInt()
+                        val totalSavings = selectedMonthBudget.sumOf { it.savings }.toInt()
+
+                        // Set up and populate the charts with the data
+                        setupPieChart(
+                            pieChart,
+                            totalIncome,
+                            totalFoodExpense,
+                            totalGasExpense,
+                            totalEntertainmentExpense,
+                            totalSavings
+                        )
+
                         onSuccess(budgets)
                     }
 
+
+
                     override fun onCancelled(error: DatabaseError) {
                         // Handle failure
-                        Log.d("ChartsFragment", "onCancelled: ${error.message}")
                         onFailure()
                     }
                 })
         }
     }
+
 
 
 
