@@ -1,7 +1,5 @@
 package com.nobos.moneymap.fragments
 
-import Day
-import Month
 import UserData
 import Year
 import android.app.AlertDialog
@@ -39,8 +37,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-
+//FIXME: Hitting the Month does not bring up the Bottom view
 class SummaryFragment : Fragment() {
+
 
     private lateinit var mAuth: FirebaseAuth
 
@@ -54,7 +53,7 @@ class SummaryFragment : Fragment() {
     private lateinit var selectDateButton: Button
 
     // Date picker for the Data Snapshots
-    private var selectedDay: Int = 1
+    private var selectedDay: Int = 0
     private var selectedMonth: Int = 0
     private var selectedYear: Int = 0
 
@@ -76,6 +75,13 @@ class SummaryFragment : Fragment() {
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         )
+
+
+        // Set the initial values for selectedYear and selectedMonth to the current year and month
+        val calendar = Calendar.getInstance()
+        selectedYear = calendar.get(Calendar.YEAR)
+        selectedMonth = calendar.get(Calendar.MONTH)
+        selectedDay = calendar.get(Calendar.DAY_OF_MONTH)
 
         // Initialize the RecyclerView and set its adapter
         val monthRecyclerView: RecyclerView = view.findViewById(R.id.monthsRecyclerView)
@@ -139,29 +145,20 @@ class SummaryFragment : Fragment() {
                     }
                     Log.d("SummaryFragment", "Fetched years: $fetchedYears")
 
-                    // Call the showChartsForMonth() function with the current month and year
-                    showChartsForMonth(selectedMonth, selectedYear)
+                    if (fetchedYears.isNotEmpty()) {
+                        // Call the showChartsForMonth() function with the current month and year
+                        showChartsForMonth(selectedMonth, selectedYear)
+                    } else {
+                        Log.d("SummaryFragment", "No data available for the current user")
+                    }
                 }
+
 
                 override fun onCancelled(databaseError: DatabaseError) {
                     Log.w("SummaryFragment", "Failed to fetch data", databaseError.toException())
                 }
             })
         }
-
-        val calendar = Calendar.getInstance()
-        calendar.apply {
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-        calendar.apply {
-            add(Calendar.MONTH, 1)
-            add(Calendar.DAY_OF_MONTH, -1)
-        }.timeInMillis
-
 
         // Set an OnClickListener to the sign out button
         signOutButton.setOnClickListener {
@@ -172,12 +169,14 @@ class SummaryFragment : Fragment() {
         }
 
         saveButton.setOnClickListener {
+            // Makes sure the inputs are not Null
             val userId = mAuth.currentUser?.uid ?: ""
-            val income = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
-            val foodExpense = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val gasExpense = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val entertainmentExpense = entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
-            val savings = savingsEditText.text.toString().toIntOrNull() ?: 0
+            val income = if (totalIncomeEditText.text.isNotEmpty()) totalIncomeEditText.text.toString().toInt() else 0
+            val foodExpense = if (foodExpenseEditText.text.isNotEmpty()) foodExpenseEditText.text.toString().toInt() else 0
+            val gasExpense = if (gasExpenseEditText.text.isNotEmpty()) gasExpenseEditText.text.toString().toInt() else 0
+            val entertainmentExpense = if (entertainmentExpenseEditText.text.isNotEmpty()) entertainmentExpenseEditText.text.toString().toInt() else 0
+            val savings = if (savingsEditText.text.isNotEmpty()) savingsEditText.text.toString().toInt() else 0
+
 
             // Create a new UserData object
             val userData = UserData(
@@ -189,15 +188,6 @@ class SummaryFragment : Fragment() {
                 timestamp = System.currentTimeMillis()
             )
 
-            // Create a Day object with the UserData
-            val day = Day(userKeys = mapOf(userId to userData))
-
-            // Create a Month object with the Day object
-            val month = Month(days = mapOf(selectedDay.toString() to day))
-
-            // Create a Year object with the Month object
-            val year = Year(months = mapOf(selectedMonth.toString() to month))
-
 
             // Save the UserData using the ViewModel
             summaryViewModel.saveUserData(userId, selectedYear, selectedMonth, selectedDay, userData)
@@ -206,8 +196,7 @@ class SummaryFragment : Fragment() {
                         .show()
                 }
                 .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Failed to save budget", Toast.LENGTH_SHORT)
-                        .show()
+                    return@addOnFailureListener
                 }
         }
 
@@ -281,10 +270,9 @@ class SummaryFragment : Fragment() {
             totalIncomeTextView.text = income.toString()
         }
     }
-    // Add this function in SummaryFragment class
+
     fun showChartsForMonth(month: Int, year: Int) {
         val chartsFragment = ChartsFragment.newInstance(month.toLong(), year)
-
         val chartsFragmentContainer = view?.findViewById<FrameLayout>(R.id.bottomSheetContainer)
 
 
@@ -301,7 +289,6 @@ class SummaryFragment : Fragment() {
                         childFragmentManager.beginTransaction()
                             .remove(chartsFragment)
                             .commit()
-                        chartsFragmentContainer.visibility = View.VISIBLE
                     }
                 }
 

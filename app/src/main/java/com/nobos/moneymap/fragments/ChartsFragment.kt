@@ -1,18 +1,23 @@
 package com.nobos.moneymap.fragments
 
 import Budget
+import Day
+import Month
 import UserData
+import Year
+import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.PercentFormatter
+import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -21,8 +26,7 @@ import com.google.firebase.database.ValueEventListener
 import com.nobos.moneymap.R
 import java.util.Calendar
 
-import android.util.Log
-
+//FIXME: Fix retrieval of the database to app to Graph
 class ChartsFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
@@ -56,24 +60,24 @@ class ChartsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_charts, container, false)
-        Log.d("ChartsFragment", "onViewCreated")
         // Get the chart views from the layout
         val pieChart: PieChart = view.findViewById(R.id.pieChart)
 
         // Retrieve the selected month and year from the arguments bundle
-        val selectedMonth =
-            arguments?.getInt(ARG_SELECTED_MONTH) ?: Calendar.getInstance().get(Calendar.MONTH)
-        val selectedYear =
-            arguments?.getInt(ARG_SELECTED_YEAR) ?: Calendar.getInstance().get(Calendar.YEAR)
+        val selectedMonth = arguments?.getInt(ARG_SELECTED_MONTH)?.toString() ?: Calendar.getInstance().get(Calendar.MONTH).toString()
+        val selectedYear = arguments?.getInt(ARG_SELECTED_YEAR)?.toString() ?: Calendar.getInstance().get(Calendar.YEAR).toString()
 
         // Fetch data for the selected month and year
-        fetchUserData({ budgets ->
-            //FIXME: THIS IS JUST DOESN'T WORK LOL
+        fetchUserData(
+            selectedMonth,
+            selectedYear,
+            { budgets ->
+            // Filter the UserData objects by day
             val selectedMonthBudget = budgets.filter { userData ->
-                userData.month == selectedMonth && userData.year == selectedYear
+                userData.timestamp.toCalendar().get(Calendar.MONTH).toString() == selectedMonth &&
+                        userData.timestamp.toCalendar().get(Calendar.YEAR)
+                            .toString() == selectedYear
             }
-
-
 
             // Aggregate the data for the selected month and year
             val totalIncome = selectedMonthBudget.sumOf { it.income }
@@ -92,13 +96,20 @@ class ChartsFragment : Fragment() {
                 totalSavings.toInt()
             )
         }, {
-            Toast.makeText(requireContext(), "Failed to fetch user data", Toast.LENGTH_SHORT).show()
+            Log.d("ChartFragment","Failed to fetch user data")
+           // Toast.makeText(requireContext(), "Failed to fetch user data", Toast.LENGTH_SHORT).show()
         })
 
         return view
     }
 
-    private fun fetchUserData(onSuccess: (List<UserData>) -> Unit, onFailure: () -> Unit) {
+
+    private fun fetchUserData(
+        selectedMonth: String,
+        selectedYear: String,
+        onSuccess: (List<UserData>) -> Unit,
+        onFailure: (String) -> Unit
+    ){
         val currentUser = auth.currentUser
 
         currentUser?.let { user ->
@@ -106,78 +117,117 @@ class ChartsFragment : Fragment() {
             db.reference.child("Budget").child(userId)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
+                        if (!isAdded) return
+// Gets The data from the database and all the children nodes
                         if (snapshot.exists()) {
-                            val userBudget = snapshot.getValue(Budget::class.java)
+                            val userBudgetYears = mutableMapOf<String, Year>()
+                            snapshot.children.forEach yearLoop@{ yearSnapshot ->
+                                val yearKey = yearSnapshot.key ?: return@yearLoop
+                                if (yearSnapshot.hasChildren()) {
+                                    val yearMonths = mutableMapOf<String, Month>()
+                                    yearSnapshot.children.forEach monthLoop@{ monthSnapshot ->
+                                        val monthKey = monthSnapshot.key ?: return@monthLoop
+                                        if (monthSnapshot.hasChildren()) {
+                                            val monthDays = mutableMapOf<String, Day>()
+                                            monthSnapshot.children.forEach dayLoop@{ daySnapshot ->
+                                                val dayKey = daySnapshot.key ?: return@dayLoop
+                                                if (daySnapshot.hasChildren()) {
+                                                    val userKeysData = mutableMapOf<String, UserData>()
+                                                    daySnapshot.children.forEach userDataLoop@{ userDataSnapshot ->
+                                                        val userKey = userDataSnapshot.key ?: return@userDataLoop
+                                                        val userData = userDataSnapshot.getValue(UserData::class.java) ?: return@userDataLoop
+                                                        userKeysData[userKey] = userData
+                                                    }
+                                                    monthDays[dayKey] = Day(userKeysData)
+                                                }
+                                            }
+                                            yearMonths[monthKey] = Month(monthDays)
+                                        }
+                                    }
+                                    userBudgetYears[yearKey] = Year(yearMonths)
+                                }
+                            }
+                            val userBudget = Budget(userBudgetYears)
+
+                            Log.d("ChartsFragment", "User budget data: $userBudget")
 
                             // If userBudget is not null, pass the list of UserData objects to the onSuccess callback
-                            userBudget?.let {
-                                //FIXME: THIS ALSO DOESN'T WORK LOL. IDK WHY
-                                val userDataList = it.userId.values.flatMap { user -> user.userKey.values }
-                                if (isAdded) {
+                            userBudget.let { budget ->
+                                val year = budget.years[selectedYear]
+                                val month = year?.months?.get(selectedMonth)
+                                val dayList = month?.days?.values?.toList()
+                                val userDataList = dayList?.flatMap { it.userKeys.values }
+
+                                if (userDataList != null && isAdded) {
                                     onSuccess(userDataList)
+                                } else {
+                                    Log.d("FAILED", "No data found for the selected month and year")
+                                    onFailure("No data found for the selected month and year")
                                 }
-                            } ?: onFailure()
+                            }
 
                         } else {
                             Log.d("ChartsFragment", "No data found for user $userId")
                             if (isAdded) {
-                                onFailure()
+                                Log.d("FAILED", "Error fetching data:")
+                                onFailure("No data found for user")
                             }
                         }
 
                     }
 
+
                     override fun onCancelled(error: DatabaseError) {
                         // Handle failure
-                        Log.d("ChartsFragment", "Error fetching data: ${error.message}")
-                        onFailure()
+                        Log.d("FAILED", "Error fetching data: ${error.message}")
+                        onFailure("Error fetching data: ${error.message}")
                     }
                 })
         }
     }
 
-
-
-
     private fun setupPieChart(
-        pieChart: PieChart,
-        income: Int,
-        foodExpense: Int,
-        gasExpense: Int,
-        entertainmentExpense: Int,
-        savings: Int
+        chart: PieChart,
+        totalIncome: Int,
+        totalFoodExpense: Int,
+        totalGasExpense: Int,
+        totalEntertainmentExpense: Int,
+        totalSavings: Int
     ) {
-        // Prepare the data
-        val pieEntries = ArrayList<PieEntry>()
-        pieEntries.add(PieEntry(income.toFloat(), "Income"))
-        pieEntries.add(PieEntry(foodExpense.toFloat(), "Food Expense"))
-        pieEntries.add(PieEntry(gasExpense.toFloat(), "Gas Expense"))
-        pieEntries.add(PieEntry(entertainmentExpense.toFloat(), "Entertainment Expense"))
-        pieEntries.add(PieEntry(savings.toFloat(), "Savings"))
-
-        Log.d("ChartsFragment", "PieEntries: $pieEntries") // Moved the log statement here
-
-        // Create a PieDataSet and set colors
-        val pieDataSet = PieDataSet(pieEntries, "Expenses")
-        pieDataSet.colors = listOf(
-            ContextCompat.getColor(requireContext(), R.color.teal_700),
-            ContextCompat.getColor(requireContext(), R.color.purple_200),
-            ContextCompat.getColor(requireContext(), R.color.orange),
-            ContextCompat.getColor(requireContext(), R.color.red),
-            ContextCompat.getColor(requireContext(), R.color.green)
+        val entries = listOf(
+            PieEntry(totalIncome.toFloat(), "Income"),
+            PieEntry(totalFoodExpense.toFloat(), "Food"),
+            PieEntry(totalGasExpense.toFloat(), "Gas"),
+            PieEntry(totalEntertainmentExpense.toFloat(), "Entertainment"),
+            PieEntry(totalSavings.toFloat(), "Savings")
         )
 
-        // Create a PieData object and set it to the chart
-        val pieData = PieData(pieDataSet)
-        pieChart.data = pieData
+        val dataSet = PieDataSet(entries, "Monthly Expenses").apply {
+            setColors(*ColorTemplate.JOYFUL_COLORS)
+            valueTextColor = Color.BLACK
+            valueTextSize = 14f
+        }
 
-        // Customize the chart
-        pieChart.description.isEnabled = false
-        pieChart.setDrawEntryLabels(false)
-        pieChart.setUsePercentValues(true)
-        pieChart.animateY(1000)
+        val data = PieData(dataSet).apply {
+            setValueFormatter(PercentFormatter())
+            setValueTextSize(14f)
+            setValueTextColor(Color.BLACK)
+        }
 
-        // Refresh the chart
-        pieChart.invalidate()
+        chart.apply {
+            this.data = data
+            description.isEnabled = false
+            legend.isEnabled = true
+            setEntryLabelColor(Color.BLACK)
+            setEntryLabelTextSize(14f)
+            setHoleColor(Color.TRANSPARENT)
+            animateY(1000)
+        }
     }
+    private fun Long.toCalendar(): Calendar {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = this
+        return calendar
+    }
+
 }
