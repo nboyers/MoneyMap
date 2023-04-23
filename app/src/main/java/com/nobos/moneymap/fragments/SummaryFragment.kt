@@ -1,11 +1,16 @@
 package com.nobos.moneymap.fragments
 
+import Day
+import Month
+import UserData
+import Year
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,13 +25,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.nobos.moneymap.R
 import com.nobos.moneymap.adapters.MonthAdapter
 import com.nobos.moneymap.firebase.LoginActivity
-import com.nobos.moneymap.models.Budget
 import com.nobos.moneymap.viewModels.SummaryViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,7 +52,6 @@ class SummaryFragment : Fragment() {
     private lateinit var database: FirebaseDatabase
     private lateinit var summaryViewModel: SummaryViewModel
     private lateinit var selectDateButton: Button
-    private var isDialogOpen = false
 
     // Date picker for the Data Snapshots
     private var selectedDay: Int = 1
@@ -67,53 +72,42 @@ class SummaryFragment : Fragment() {
 
         mAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
-
         val monthAbbreviations = arrayOf(
             "Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         )
 
-        val monthAdapter = MonthAdapter(monthAbbreviations) { monthNumber, currentYear ->
-            // Check if a BottomSheetDialog is already open
-            if (!isDialogOpen) {
-                // Set the flag to true to prevent other BottomSheetDialogs from opening
-                isDialogOpen = true
-
-                // Create a new instance of ChartsFragment with the selected month and current year
-                val chartsFragment = ChartsFragment.newInstance(monthNumber.toLong(), currentYear.toLong())
-
-                // Create and show the BottomSheetDialog with the chartsFragment
-                val bottomSheetDialog =
-                    BottomSheetDialog(requireContext(), R.style.AppTheme_BottomSheetDialog)
-
-                // Add the ChartsFragment to the BottomSheetDialog
-                bottomSheetDialog.setContentView(R.layout.fragment_charts)
-                val containerView =
-                    bottomSheetDialog.findViewById<FrameLayout>(R.id.bottomSheetContainer)
-
-                if (containerView != null) {
-                    containerView.setBackgroundColor(Color.TRANSPARENT)
-                    childFragmentManager.beginTransaction()
-                        .replace(R.id.bottomSheetContainer, chartsFragment)
-                        .commit()
-                } else {
-                    Toast.makeText(requireContext(), "No data to present", Toast.LENGTH_SHORT)
-                        .show()
-                }
-
-                // Set an OnDismissListener to the BottomSheetDialog to set the flag back to false
-                bottomSheetDialog.setOnDismissListener {
-                    isDialogOpen = false
-                }
-
-                bottomSheetDialog.show()
-            }
-        }
-
-
         // Initialize the RecyclerView and set its adapter
         val monthRecyclerView: RecyclerView = view.findViewById(R.id.monthsRecyclerView)
+
+        val monthAdapter = MonthAdapter(monthAbbreviations) { monthNumber, currentYear ->
+            // Handle month click here
+            // For example, you can call the showChartsForMonth() function:
+            showChartsForMonth(monthNumber - 1, currentYear)
+        }
+
         monthRecyclerView.adapter = monthAdapter
+
+        mAuth.currentUser?.let { user ->
+            val userId = user.uid
+            val databaseReference = database.reference.child("Budget").child(userId)
+
+            databaseReference.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val fetchedYears = dataSnapshot.children.mapNotNull { snapshot ->
+                        snapshot.getValue(Year::class.java)
+                    }
+                    Log.d("SummaryFragment", "Fetched years: $fetchedYears")
+
+                    // Call the showChartsForMonth() function with the current month and year
+                    showChartsForMonth(selectedMonth, selectedYear)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.w("SummaryFragment", "Failed to fetch data", databaseError.toException())
+                }
+            })
+        }
 
 
         // Retrieve the views from the fragment view
@@ -133,6 +127,28 @@ class SummaryFragment : Fragment() {
 
 
         mAuth.currentUser?.uid ?: ""
+
+        mAuth.currentUser?.let { user ->
+            val userId = user.uid
+            val databaseReference = database.reference.child("Budget").child(userId)
+
+            databaseReference.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val fetchedYears = dataSnapshot.children.mapNotNull { snapshot ->
+                        snapshot.getValue(Year::class.java)
+                    }
+                    Log.d("SummaryFragment", "Fetched years: $fetchedYears")
+
+                    // Call the showChartsForMonth() function with the current month and year
+                    showChartsForMonth(selectedMonth, selectedYear)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.w("SummaryFragment", "Failed to fetch data", databaseError.toException())
+                }
+            })
+        }
+
         val calendar = Calendar.getInstance()
         calendar.apply {
             set(Calendar.DAY_OF_MONTH, 1)
@@ -156,28 +172,35 @@ class SummaryFragment : Fragment() {
         }
 
         saveButton.setOnClickListener {
-            val income = totalIncomeEditText.text.toString().toLongOrNull() ?: 0.0
-            val foodExpense = foodExpenseEditText.text.toString().toLongOrNull() ?: 0
-            val gasExpense = gasExpenseEditText.text.toString().toLongOrNull() ?: 0
-            val entertainmentExpense =
-                entertainmentExpenseEditText.text.toString().toLongOrNull() ?: 0
-            val savings = savingsEditText.text.toString().toLongOrNull() ?: 0
+            val userId = mAuth.currentUser?.uid ?: ""
+            val income = totalIncomeEditText.text.toString().toIntOrNull() ?: 0
+            val foodExpense = foodExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val gasExpense = gasExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val entertainmentExpense = entertainmentExpenseEditText.text.toString().toIntOrNull() ?: 0
+            val savings = savingsEditText.text.toString().toIntOrNull() ?: 0
 
-            // Create a new budget object
-            val budget = Budget(
-                userId = mAuth.currentUser?.uid ?: "",
-                income = income as Long,
-                foodExpense = foodExpense,
-                gasExpense = gasExpense,
-                entertainmentExpense = entertainmentExpense,
-                savings = savings,
-                day = selectedDay.toLong(),
-                month = selectedMonth.toLong(),
-                year = selectedYear.toLong(),
+            // Create a new UserData object
+            val userData = UserData(
+                income = income,
+                foodExpense = foodExpense.toLong(),
+                gasExpense = gasExpense.toLong(),
+                entertainmentExpense = entertainmentExpense.toLong(),
+                savings = savings.toLong(),
+                timestamp = System.currentTimeMillis()
             )
 
-            // Save the budget using the ViewModel
-            summaryViewModel.saveBudget(budget)
+            // Create a Day object with the UserData
+            val day = Day(userKeys = mapOf(userId to userData))
+
+            // Create a Month object with the Day object
+            val month = Month(days = mapOf(selectedDay.toString() to day))
+
+            // Create a Year object with the Month object
+            val year = Year(months = mapOf(selectedMonth.toString() to month))
+
+
+            // Save the UserData using the ViewModel
+            summaryViewModel.saveUserData(userId, selectedYear, selectedMonth, selectedDay, userData)
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "Budget saved", Toast.LENGTH_SHORT)
                         .show()
@@ -187,6 +210,7 @@ class SummaryFragment : Fragment() {
                         .show()
                 }
         }
+
 
         // Add the same TextWatcher to each EditText field
         val textWatcher = object : TextWatcher {
@@ -259,13 +283,14 @@ class SummaryFragment : Fragment() {
     }
     // Add this function in SummaryFragment class
     fun showChartsForMonth(month: Int, year: Int) {
-        val chartsFragment = ChartsFragment.newInstance(month.toLong(), year.toLong())
+        val chartsFragment = ChartsFragment.newInstance(month.toLong(), year)
 
         val chartsFragmentContainer = view?.findViewById<FrameLayout>(R.id.bottomSheetContainer)
 
+
         if (chartsFragmentContainer != null) {
             chartsFragmentContainer.setBackgroundColor(Color.TRANSPARENT)
-            chartsFragmentContainer.visibility = View.VISIBLE
+            chartsFragmentContainer.visibility = View.GONE
 
             val behavior = BottomSheetBehavior.from(chartsFragmentContainer)
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -276,7 +301,7 @@ class SummaryFragment : Fragment() {
                         childFragmentManager.beginTransaction()
                             .remove(chartsFragment)
                             .commit()
-                        chartsFragmentContainer.visibility = View.GONE
+                        chartsFragmentContainer.visibility = View.VISIBLE
                     }
                 }
 
@@ -285,13 +310,10 @@ class SummaryFragment : Fragment() {
 
             chartsFragmentContainer.setBackgroundColor(Color.TRANSPARENT)
             childFragmentManager.beginTransaction()
-
                 .replace(R.id.bottomSheetContainer, chartsFragment)
-                .commit()
+                .commitAllowingStateLoss()
         } else {
             Toast.makeText(requireContext(), "No data to present", Toast.LENGTH_SHORT).show()
         }
     }
-
-
 }
