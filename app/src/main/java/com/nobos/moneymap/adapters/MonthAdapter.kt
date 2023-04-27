@@ -30,6 +30,7 @@ class MonthAdapter(
         holder.itemView.setOnClickListener {
             val currentYear = Calendar.getInstance().get(Calendar.YEAR)
             val monthNumber = position + 1
+
             onMonthClickListener(monthNumber, currentYear)
         }
     }

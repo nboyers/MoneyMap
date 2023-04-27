@@ -37,7 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-//FIXME: Hitting the Month does not bring up the Bottom view
+
 class SummaryFragment : Fragment() {
 
 
@@ -87,10 +87,9 @@ class SummaryFragment : Fragment() {
         val monthRecyclerView: RecyclerView = view.findViewById(R.id.monthsRecyclerView)
 
         val monthAdapter = MonthAdapter(monthAbbreviations) { monthNumber, currentYear ->
-            // Handle month click here
-            // For example, you can call the showChartsForMonth() function:
             showChartsForMonth(monthNumber - 1, currentYear)
         }
+
 
         monthRecyclerView.adapter = monthAdapter
 
@@ -181,10 +180,10 @@ class SummaryFragment : Fragment() {
             // Create a new UserData object
             val userData = UserData(
                 income = income,
-                foodExpense = foodExpense.toLong(),
-                gasExpense = gasExpense.toLong(),
-                entertainmentExpense = entertainmentExpense.toLong(),
-                savings = savings.toLong(),
+                foodExpense = foodExpense,
+                gasExpense = gasExpense,
+                entertainmentExpense = entertainmentExpense,
+                savings = savings,
                 timestamp = System.currentTimeMillis()
             )
 
@@ -270,11 +269,9 @@ class SummaryFragment : Fragment() {
             totalIncomeTextView.text = income.toString()
         }
     }
-
     fun showChartsForMonth(month: Int, year: Int) {
         val chartsFragment = ChartsFragment.newInstance(month.toLong(), year)
         val chartsFragmentContainer = view?.findViewById<FrameLayout>(R.id.bottomSheetContainer)
-
 
         if (chartsFragmentContainer != null) {
             chartsFragmentContainer.setBackgroundColor(Color.TRANSPARENT)
@@ -289,6 +286,8 @@ class SummaryFragment : Fragment() {
                         childFragmentManager.beginTransaction()
                             .remove(chartsFragment)
                             .commit()
+                    } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                        behavior.state = BottomSheetBehavior.STATE_HIDDEN
                     }
                 }
 
@@ -299,6 +298,13 @@ class SummaryFragment : Fragment() {
             childFragmentManager.beginTransaction()
                 .replace(R.id.bottomSheetContainer, chartsFragment)
                 .commitAllowingStateLoss()
+
+            // Toggle the bottom sheet behavior
+            if (behavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+                chartsFragmentContainer.visibility = View.VISIBLE
+            } else if (behavior.state == BottomSheetBehavior.STATE_HIDDEN) {
+                chartsFragmentContainer.visibility = View.GONE
+            }
         } else {
             Toast.makeText(requireContext(), "No data to present", Toast.LENGTH_SHORT).show()
         }
