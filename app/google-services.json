@@ -7,27 +7,27 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:689886592669:android:ba746810d36af6c32d9e74",
+        "mobilesdk_app_id": "",
         "android_client_info": {
           "package_name": "com.nobos.moneymap"
         }
       },
       "oauth_client": [
         {
-          "client_id": "689886592669-4qsj34huo8rod30l4gndnd1bjq1d66ib.apps.googleusercontent.com",
+          "client_id": "",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDpPEwIcgYklXzwsqJi-6XaBGk3NQEEvBw"
+          "current_key": ""
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "689886592669-4qsj34huo8rod30l4gndnd1bjq1d66ib.apps.googleusercontent.com",
+              "client_id": "",
               "client_type": 3
             }
           ]
